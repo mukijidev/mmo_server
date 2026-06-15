@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{e9f1aba7-3c7e-4f0a-ab4a-09fce9787ce8}</ProjectGuid>
+    <RootNamespace>GameServer</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\lib\Type;$(SolutionDir)..\lib\Util;$(SolutionDir)..\lib\DataStructure;$(SolutionDir)..\lib\GameServerLib;$(SolutionDir)..\lib\Data;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\lib\Type;$(SolutionDir)..\lib\Util;$(SolutionDir)..\lib\DataStructure;$(SolutionDir)..\lib\GameServerLib;$(SolutionDir)..\lib\Data;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <Optimization>Disabled</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\lib\Type;$(SolutionDir)..\lib\Util;$(SolutionDir)..\lib\DataStructure;$(SolutionDir)..\lib\GameServerLib;$(SolutionDir)..\lib\Data;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\lib\Type;$(SolutionDir)..\lib\Util;$(SolutionDir)..\lib\DataStructure;$(SolutionDir)..\lib\GameServerLib;$(SolutionDir)..\lib\Data;$(SolutionDir)mysql;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <Optimization>Disabled</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\lib\DataStructure\TlsObjectPool.cpp" />
+    <ClCompile Include="..\..\lib\Data\Data.cpp" />
+    <ClCompile Include="..\..\lib\GameServerLib\CLanClient.cpp" />
+    <ClCompile Include="..\..\lib\GameServerLib\CNetServer.cpp" />
+    <ClCompile Include="..\..\lib\GameServerLib\GameThread.cpp" />
+    <ClCompile Include="..\..\lib\GameServerLib\Session.cpp" />
+    <ClCompile Include="..\..\lib\Type\Type.cpp" />
+    <ClCompile Include="..\..\lib\Util\CpuUsage.cpp" />
+    <ClCompile Include="..\..\lib\Util\Log.cpp" />
+    <ClCompile Include="..\..\lib\Util\PerformanceMonitor.cpp" />
+    <ClCompile Include="..\..\lib\Util\Profiler.cpp" />
+    <ClCompile Include="..\..\lib\Util\TextParser.cpp" />
+    <ClCompile Include="..\..\lib\Util\Util.cpp" />
+    <ClCompile Include="BasePacketHandleThread.cpp" />
+    <ClCompile Include="ClientPacketMaker.cpp" />
+    <ClCompile Include="FieldPacketHandleThread.cpp" />
+    <ClCompile Include="GuardianFieldThread.cpp" />
+    <ClCompile Include="GameServer.cpp" />
+    <ClCompile Include="JumpPointSearch.cpp" />
+    <ClCompile Include="LobbyFieldThread.cpp" />
+    <ClCompile Include="LoginGameThread.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="MonitorClient.cpp" />
+    <ClCompile Include="MonitorPacketMaker.cpp" />
+    <ClCompile Include="Monster.cpp" />
+    <ClCompile Include="PacketMaker.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Sector.cpp" />
+    <ClCompile Include="SpiderFieldThread.cpp" />
+    <ClCompile Include="FieldObject.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\lib\DataStructure\LockFreeObjectPool.h" />
+    <ClInclude Include="..\..\lib\DataStructure\LockFreeQueue.h" />
+    <ClInclude Include="..\..\lib\DataStructure\LockFreeStack.h" />
+    <ClInclude Include="..\..\lib\DataStructure\LockGuard.h" />
+    <ClInclude Include="..\..\lib\DataStructure\ObjectPool.h" />
+    <ClInclude Include="..\..\lib\DataStructure\RingBuffer.h" />
+    <ClInclude Include="..\..\lib\DataStructure\SerializeBuffer.h" />
+    <ClInclude Include="..\..\lib\DataStructure\TlsObjectPool.h" />
+    <ClInclude Include="..\..\lib\Data\Data.h" />
+    <ClInclude Include="..\..\lib\GameServerLib\CLanClient.h" />
+    <ClInclude Include="..\..\lib\GameServerLib\CNetServer.h" />
+    <ClInclude Include="..\..\lib\GameServerLib\GameThread.h" />
+    <ClInclude Include="..\..\lib\GameServerLib\PacketHeader.h" />
+    <ClInclude Include="..\..\lib\GameServerLib\Session.h" />
+    <ClInclude Include="..\..\lib\Type\Type.h" />
+    <ClInclude Include="..\..\lib\Util\CpuUsage.h" />
+    <ClInclude Include="..\..\lib\Util\Log.h" />
+    <ClInclude Include="..\..\lib\Util\PerformanceMonitor.h" />
+    <ClInclude Include="..\..\lib\Util\Profiler.h" />
+    <ClInclude Include="..\..\lib\Util\TextParser.h" />
+    <ClInclude Include="..\..\lib\Util\Util.h" />
+    <ClInclude Include="BasePacketHandleThread.h" />
+    <ClInclude Include="FieldPacketHandleThread.h" />
+    <ClInclude Include="GameData.h" />
+    <ClInclude Include="GuardianFieldThread.h" />
+    <ClInclude Include="GameServer.h" />
+    <ClInclude Include="JumpPointSearch.h" />
+    <ClInclude Include="LobbyFieldThread.h" />
+    <ClInclude Include="LoginGameThread.h" />
+    <ClInclude Include="MonitorClient.h" />
+    <ClInclude Include="MonitorPacket.h" />
+    <ClInclude Include="MonitorPacketMaker.h" />
+    <ClInclude Include="Monster.h" />
+    <ClInclude Include="Packet.h" />
+    <ClInclude Include="PacketMaker.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="Sector.h" />
+    <ClInclude Include="SpiderFieldThread.h" />
+    <ClInclude Include="FieldObject.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ServerConfig.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

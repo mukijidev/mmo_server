@@ -1,0 +1,225 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="ChattingServer">
+      <UniqueIdentifier>{9bff537a-a084-480f-b8af-d1ac851773df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataStructure">
+      <UniqueIdentifier>{b9b22a28-932f-453c-9431-ee04cc5c03a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Netlib">
+      <UniqueIdentifier>{e2b1314e-479d-42fd-bad5-780ce0092cae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Type">
+      <UniqueIdentifier>{1b2b6cc5-3f49-4835-8625-6883f89fbda1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Util">
+      <UniqueIdentifier>{d12fa460-00e0-4b40-b214-df79e827d20e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Util\Header">
+      <UniqueIdentifier>{8ab1844d-9f5e-4597-9050-e0c381d98e69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Util\Source">
+      <UniqueIdentifier>{e8abc1f9-3b0b-4e70-a6a4-2111445222bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Netlib\Header">
+      <UniqueIdentifier>{09a26f3a-353e-4c06-9e69-02fea7249f82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Netlib\Source">
+      <UniqueIdentifier>{b1ab9200-f895-43ab-81de-2374e9257502}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Type\Header">
+      <UniqueIdentifier>{f0fcdea0-649e-4983-8a58-3db336ff28e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Type\Source">
+      <UniqueIdentifier>{d2f56372-2f77-4954-ace1-448173f66318}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MonitorClient">
+      <UniqueIdentifier>{1ffc83be-9c56-4aaf-9bd8-e03e77e866e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MonitorClient\Header">
+      <UniqueIdentifier>{97d7fd6a-037b-4759-9a0f-b4afa6789d14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MonitorClient\Source">
+      <UniqueIdentifier>{c770711b-f9f6-4246-aacb-16f184f32679}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataStructure\Header">
+      <UniqueIdentifier>{a8a31a3d-f07b-4e44-89eb-94f9e39df59f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataStructure\Source">
+      <UniqueIdentifier>{55197581-a5eb-4b46-8097-e7c2679fec1d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ChattingServer\Header">
+      <UniqueIdentifier>{6623e97f-b38f-43f9-b7e3-c37a64a178bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ChattingServer\Source">
+      <UniqueIdentifier>{962802a8-791b-4d1d-8399-9bd3fd459a8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data">
+      <UniqueIdentifier>{b2ece469-cae5-4622-82a2-1aeba761f89d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data\Header">
+      <UniqueIdentifier>{d1ec35ef-c478-4c9c-8075-d0cb9cab3874}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data\Source">
+      <UniqueIdentifier>{990f8a57-ead4-4b69-a950-3cee5897cef0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ChattingServer.cpp">
+      <Filter>ChattingServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientPacketMaker.cpp">
+      <Filter>ChattingServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>ChattingServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerPacketMaker.cpp">
+      <Filter>ChattingServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>ChattingServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\DataStructure\TlsObjectPool.cpp">
+      <Filter>DataStructure\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Netlib\CLanClient.cpp">
+      <Filter>Netlib\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Netlib\CLanServer.cpp">
+      <Filter>Netlib\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Netlib\CNetServer.cpp">
+      <Filter>Netlib\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Netlib\Session.cpp">
+      <Filter>Netlib\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="MonitorPacketMaker.cpp">
+      <Filter>MonitorClient\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="MonitorClient.cpp">
+      <Filter>MonitorClient\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Type\Type.cpp">
+      <Filter>Type\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Util\CpuUsage.cpp">
+      <Filter>Util\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Util\Log.cpp">
+      <Filter>Util\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Util\PerformanceMonitor.cpp">
+      <Filter>Util\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Util\Profiler.cpp">
+      <Filter>Util\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Util\TextParser.cpp">
+      <Filter>Util\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Util\Util.cpp">
+      <Filter>Util\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Data\Data.cpp">
+      <Filter>Data\Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ChattingServer.h">
+      <Filter>ChattingServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Job.h">
+      <Filter>ChattingServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Packet.h">
+      <Filter>ChattingServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>ChattingServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\LockFreeObjectPool.h">
+      <Filter>DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\LockFreeQueue.h">
+      <Filter>DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\LockFreeStack.h">
+      <Filter>DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\LockGuard.h">
+      <Filter>DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\ObjectPool.h">
+      <Filter>DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\RingBuffer.h">
+      <Filter>DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\SerializeBuffer.h">
+      <Filter>DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\TlsObjectPool.h">
+      <Filter>DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Netlib\CLanClient.h">
+      <Filter>Netlib\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Netlib\CLanServer.h">
+      <Filter>Netlib\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Netlib\CNetServer.h">
+      <Filter>Netlib\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Netlib\PacketHeader.h">
+      <Filter>Netlib\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Netlib\Session.h">
+      <Filter>Netlib\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="MonitorClient.h">
+      <Filter>MonitorClient\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="MonitorPacket.h">
+      <Filter>MonitorClient\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="MonitorPacketMaker.h">
+      <Filter>MonitorClient\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Type\Type.h">
+      <Filter>Type\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Util\CpuUsage.h">
+      <Filter>Util\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Util\Log.h">
+      <Filter>Util\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Util\PerformanceMonitor.h">
+      <Filter>Util\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Util\Profiler.h">
+      <Filter>Util\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Util\TextParser.h">
+      <Filter>Util\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Util\Util.h">
+      <Filter>Util\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Data\Data.h">
+      <Filter>Data\Header</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ServerConfig.txt">
+      <Filter>리소스 파일</Filter>
+    </Text>
+  </ItemGroup>
+</Project>

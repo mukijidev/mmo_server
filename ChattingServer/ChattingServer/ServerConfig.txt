@@ -1,0 +1,61 @@
+/*
+ 서버 
+*/
+:Server
+{
+	
+	ServerConcurrentThreadNum   =	 1
+	ServerWorkerThreadNum = 	 2
+	ServerPort = 103012
+	Nagle = 1
+	SendZeroCopy = 0
+	DBPort = 3306
+}
+
+:ChattingServer
+{
+	ChattingServerPort = 10302
+}
+
+:GameServer
+{
+	GameServerPort = 10303
+}
+
+:LoginServer
+{
+	LoginServerPort = 10301
+}
+
+
+/*
+로그
+ 0 : Debug, 1 : Error, 2 : System
+*/
+:Log
+{
+	LogLevel = 0
+}
+
+/*
+클라이언트
+*/
+:MonitorClient
+{
+	MonitorActivate = 0
+	MonitorServerIp = 127.0.0.1
+	MonitorPort = 10393
+	MonitorClientConcurrentThreadNum   =	 1
+	MonitorClientWorkerThreadNum = 	 2
+}
+
+/*
+패킷
+*/
+:Packet
+{
+	ServerPacketCode = 119
+	ServerPacketKey = 119
+	ClientPacketCode = 109
+	ClientPacketKey = 30
+}

@@ -1,0 +1,279 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="GameServer">
+      <UniqueIdentifier>{47bb7efc-a914-4963-ad34-328fb5197b7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib">
+      <UniqueIdentifier>{445001ab-ef72-4d0c-814d-c60446e2f7cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MonitorClient">
+      <UniqueIdentifier>{67635b68-a28e-43f9-84cb-49770ab16f08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\Data">
+      <UniqueIdentifier>{21f66d78-39e5-45ce-9129-cfe164752d74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\DataStructure">
+      <UniqueIdentifier>{a40f6f45-999c-4fd7-bc78-7a2131793302}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\GameServerLib">
+      <UniqueIdentifier>{d2f4e65d-d806-4e68-8be9-4f8299ed8e91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\Type">
+      <UniqueIdentifier>{7f4123cb-4ceb-41db-956a-846a9c7e0aa0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\Util">
+      <UniqueIdentifier>{51fd1623-54d2-4c27-ae72-74928d579b3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MonitorClient\Header">
+      <UniqueIdentifier>{f2335c5e-9d78-40eb-a5a5-3a4cac31635a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MonitorClient\Source">
+      <UniqueIdentifier>{66cea074-5185-4d3a-833a-c6991b8cede6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameServer\Header">
+      <UniqueIdentifier>{479eea5a-d201-4e36-9c06-4bf90655cc25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameServer\Source">
+      <UniqueIdentifier>{ceebf3f9-9bab-4ec8-9967-65476cf8d17c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\GameServerLib\Header">
+      <UniqueIdentifier>{1d4d2cdf-1491-4786-8477-098efe606fb5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\GameServerLib\Source">
+      <UniqueIdentifier>{a6cc3e17-ac63-44da-86f7-5ec669541d18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\DataStructure\Header">
+      <UniqueIdentifier>{10f7c571-b28b-4dd6-babe-402e3454600a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\DataStructure\Source">
+      <UniqueIdentifier>{1c394e10-4f93-49ef-b466-4ec3956d0aa9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\Util\Header">
+      <UniqueIdentifier>{d298ede4-7ec4-40b9-a4b2-d1a7ca75cc3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\Util\Source">
+      <UniqueIdentifier>{8a74477f-5635-40d2-8333-bccccdf18a63}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\lib\GameServerLib\CLanClient.cpp">
+      <Filter>lib\GameServerLib\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\GameServerLib\CNetServer.cpp">
+      <Filter>lib\GameServerLib\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\GameServerLib\GameThread.cpp">
+      <Filter>lib\GameServerLib\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\GameServerLib\Session.cpp">
+      <Filter>lib\GameServerLib\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Data\Data.cpp">
+      <Filter>lib\Data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\DataStructure\TlsObjectPool.cpp">
+      <Filter>lib\DataStructure\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Util\CpuUsage.cpp">
+      <Filter>lib\Util\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Util\Log.cpp">
+      <Filter>lib\Util\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Util\PerformanceMonitor.cpp">
+      <Filter>lib\Util\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Util\Profiler.cpp">
+      <Filter>lib\Util\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Util\TextParser.cpp">
+      <Filter>lib\Util\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Util\Util.cpp">
+      <Filter>lib\Util\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientPacketMaker.cpp">
+      <Filter>GameServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GuardianFieldThread.cpp">
+      <Filter>GameServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GameServer.cpp">
+      <Filter>GameServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LoginGameThread.cpp">
+      <Filter>GameServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>GameServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>GameServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="MonitorPacketMaker.cpp">
+      <Filter>MonitorClient\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="MonitorClient.cpp">
+      <Filter>MonitorClient\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Type\Type.cpp">
+      <Filter>lib\Type</Filter>
+    </ClCompile>
+    <ClCompile Include="Monster.cpp">
+      <Filter>GameServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LobbyFieldThread.cpp">
+      <Filter>GameServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="SpiderFieldThread.cpp">
+      <Filter>GameServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="BasePacketHandleThread.cpp">
+      <Filter>GameServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="FieldPacketHandleThread.cpp">
+      <Filter>GameServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketMaker.cpp">
+      <Filter>GameServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Sector.cpp">
+      <Filter>GameServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="FieldObject.cpp">
+      <Filter>GameServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="JumpPointSearch.cpp">
+      <Filter>lib\Util\Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\lib\GameServerLib\Session.h">
+      <Filter>lib\GameServerLib\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\GameServerLib\CLanClient.h">
+      <Filter>lib\GameServerLib\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\GameServerLib\CNetServer.h">
+      <Filter>lib\GameServerLib\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\GameServerLib\GameThread.h">
+      <Filter>lib\GameServerLib\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\GameServerLib\PacketHeader.h">
+      <Filter>lib\GameServerLib\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Data\Data.h">
+      <Filter>lib\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\LockFreeObjectPool.h">
+      <Filter>lib\DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\LockFreeQueue.h">
+      <Filter>lib\DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\LockFreeStack.h">
+      <Filter>lib\DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\LockGuard.h">
+      <Filter>lib\DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\ObjectPool.h">
+      <Filter>lib\DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\RingBuffer.h">
+      <Filter>lib\DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\SerializeBuffer.h">
+      <Filter>lib\DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\TlsObjectPool.h">
+      <Filter>lib\DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Type\Type.h">
+      <Filter>lib\Type</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Util\CpuUsage.h">
+      <Filter>lib\Util\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Util\Log.h">
+      <Filter>lib\Util\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Util\PerformanceMonitor.h">
+      <Filter>lib\Util\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Util\Profiler.h">
+      <Filter>lib\Util\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Util\TextParser.h">
+      <Filter>lib\Util\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Util\Util.h">
+      <Filter>lib\Util\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GuardianFieldThread.h">
+      <Filter>GameServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GameServer.h">
+      <Filter>GameServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="LoginGameThread.h">
+      <Filter>GameServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Packet.h">
+      <Filter>GameServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>GameServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="MonitorPacketMaker.h">
+      <Filter>MonitorClient\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="MonitorPacket.h">
+      <Filter>MonitorClient\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="MonitorClient.h">
+      <Filter>MonitorClient\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Monster.h">
+      <Filter>GameServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="GameData.h">
+      <Filter>GameServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="LobbyFieldThread.h">
+      <Filter>GameServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="SpiderFieldThread.h">
+      <Filter>GameServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="BasePacketHandleThread.h">
+      <Filter>GameServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="FieldPacketHandleThread.h">
+      <Filter>GameServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketMaker.h">
+      <Filter>GameServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Sector.h">
+      <Filter>GameServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="FieldObject.h">
+      <Filter>GameServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="JumpPointSearch.h">
+      <Filter>lib\Util\Header</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ServerConfig.txt">
+      <Filter>리소스 파일</Filter>
+    </Text>
+  </ItemGroup>
+</Project>

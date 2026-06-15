@@ -1,0 +1,230 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="LoginServer">
+      <UniqueIdentifier>{f9c22b44-2cf7-4e9a-8da1-36af088f938f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MonitorCient">
+      <UniqueIdentifier>{9fbc9254-38ea-43b0-8006-3f46e71122bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib">
+      <UniqueIdentifier>{d4da34df-d9b5-482c-9cfa-81a08fc518ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MonitorCient\Header">
+      <UniqueIdentifier>{116766b4-b16a-4d64-b976-632d861610b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MonitorCient\Source">
+      <UniqueIdentifier>{604e3b86-34ac-4700-9e5e-e64e2072e796}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LoginServer\Header">
+      <UniqueIdentifier>{bad4141b-7ede-4b2a-953e-846028004ef6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LoginServer\Source">
+      <UniqueIdentifier>{87b3575c-2e59-49a9-a9a9-e8b15726c1aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\Data">
+      <UniqueIdentifier>{d465226d-6154-40c3-b000-9f8573372fea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\Type">
+      <UniqueIdentifier>{0f6f8192-6a3d-4789-aeca-74397e6bbbff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\Util">
+      <UniqueIdentifier>{5de93c33-d6db-4e4a-94eb-0bf927eb4989}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\Type\Header">
+      <UniqueIdentifier>{294f107a-598f-4994-996d-ec11c67c79ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\Util\Header">
+      <UniqueIdentifier>{01bdc074-4489-44a4-b415-4cfa9524a3df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\Util\Source">
+      <UniqueIdentifier>{430c5024-6997-48b0-88cf-960e796abe07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\Netlib">
+      <UniqueIdentifier>{dc6ae031-ad1a-4884-93d2-4ff92e3b86e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\Netlib\Header">
+      <UniqueIdentifier>{102a126d-943f-44c2-acd2-dcbba24ccc41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\Netlib\Source">
+      <UniqueIdentifier>{481ad88e-9fb9-4a51-8d43-7b72232ec008}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\DataStructure">
+      <UniqueIdentifier>{3bf85f2e-cd09-4218-a2de-d1e793affa15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\DataStructure\Header">
+      <UniqueIdentifier>{f2a84ebb-4058-4a7c-a36c-04642b60d0f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\DataStructure\Source">
+      <UniqueIdentifier>{317cd5ff-ff39-41c5-ae54-ab17258c4f23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\Data\Header">
+      <UniqueIdentifier>{ff905645-7eb9-4647-ad59-40f2a316c9c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\Data\Source">
+      <UniqueIdentifier>{49402f29-d82c-472f-b44e-e88e926acebc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="MonitorPacketMaker.cpp">
+      <Filter>MonitorCient\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="MonitorClient.cpp">
+      <Filter>MonitorCient\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerPacketMaker.cpp">
+      <Filter>LoginServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>LoginServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Packet.cpp">
+      <Filter>LoginServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>LoginServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LoginServer.cpp">
+      <Filter>LoginServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientPacketMaker.cpp">
+      <Filter>LoginServer\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Data\Data.cpp">
+      <Filter>lib\Data\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\DataStructure\TlsObjectPool.cpp">
+      <Filter>lib\DataStructure\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\NetlibReleaseThread\Session.cpp">
+      <Filter>lib\Netlib\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\NetlibReleaseThread\CLanClient.cpp">
+      <Filter>lib\Netlib\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\NetlibReleaseThread\CLanServer.cpp">
+      <Filter>lib\Netlib\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\NetlibReleaseThread\CNetServer.cpp">
+      <Filter>lib\Netlib\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Util\CpuUsage.cpp">
+      <Filter>lib\Util\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Util\Log.cpp">
+      <Filter>lib\Util\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Util\PerformanceMonitor.cpp">
+      <Filter>lib\Util\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Util\TextParser.cpp">
+      <Filter>lib\Util\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Util\Profiler.cpp">
+      <Filter>lib\Util\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\Util\Util.cpp">
+      <Filter>lib\Util\Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MonitorClient.h">
+      <Filter>MonitorCient\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="MonitorPacket.h">
+      <Filter>MonitorCient\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="MonitorPacketMaker.h">
+      <Filter>MonitorCient\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="LoginServer.h">
+      <Filter>LoginServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Packet.h">
+      <Filter>LoginServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>LoginServer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Data\Data.h">
+      <Filter>lib\Data\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\LockFreeObjectPool.h">
+      <Filter>lib\DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\LockFreeQueue.h">
+      <Filter>lib\DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\LockFreeStack.h">
+      <Filter>lib\DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\LockGuard.h">
+      <Filter>lib\DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\ObjectPool.h">
+      <Filter>lib\DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\RingBuffer.h">
+      <Filter>lib\DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\SerializeBuffer.h">
+      <Filter>lib\DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\DataStructure\TlsObjectPool.h">
+      <Filter>lib\DataStructure\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\NetlibReleaseThread\Session.h">
+      <Filter>lib\Netlib\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\NetlibReleaseThread\CLanClient.h">
+      <Filter>lib\Netlib\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\NetlibReleaseThread\CLanServer.h">
+      <Filter>lib\Netlib\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\NetlibReleaseThread\CNetServer.h">
+      <Filter>lib\Netlib\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\NetlibReleaseThread\PacketHeader.h">
+      <Filter>lib\Netlib\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Type\Type.h">
+      <Filter>lib\Type\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Util\Util.h">
+      <Filter>lib\Util\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Util\CpuUsage.h">
+      <Filter>lib\Util\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Util\Log.h">
+      <Filter>lib\Util\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Util\PerformanceMonitor.h">
+      <Filter>lib\Util\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Util\Profiler.h">
+      <Filter>lib\Util\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Util\TextParser.h">
+      <Filter>lib\Util\Header</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ServerConfig.txt">
+      <Filter>리소스 파일</Filter>
+    </Text>
+  </ItemGroup>
+</Project>
