@@ -160,6 +160,14 @@ void Player::HandleCharacterStop(FVector position, FRotator rotation)
 void Player::HandleCharacterAttack(int32 attackerType, int64 attackerId, int32 targetType, int64 targetId)
 {
 	int32 damage = _damage;
+	uint32 timeNow = timeGetTime();
+
+	if (timeNow - _lastAttackTime < _attackCoolDown)
+	{
+		//쿨다운 안지남
+		printf("attack cooldonw : playerId = %lld\m", playerInfo.PlayerID);
+		return;
+	}
 
 	if (targetType == TYPE_PLAYER)
 	{
@@ -174,6 +182,13 @@ void Player::HandleCharacterAttack(int32 attackerType, int64 attackerId, int32 t
 			printf("targetPlayer is nullptr\n");
 			return;
 		}
+
+		//사거리
+		if (Util::CalculateSquareDistanceXY(Position, targetPlayer->Position) > _attackRangeSquare)
+		{
+			printf("attack out of range\n");
+			return;
+		}
 		bool bDeath = targetPlayer->TakeDamage(damage);
 
 		printf("targetPlayer->TakeDamage\n");
@@ -182,6 +197,7 @@ void Player::HandleCharacterAttack(int32 attackerType, int64 attackerId, int32 t
 		SendPacket_Around(resDamagePacket);
 		CPacket::Free(resDamagePacket);
 
+		_lastAttackTime = timeNow;
 		if (bDeath)
 		{
 			//죽었으면 죽은 패킷까지 보내고
@@ -207,7 +223,13 @@ void Player::HandleCharacterAttack(int32 attackerType, int64 attackerId, int32 t
 			return;
 		}
 
+		if (Util::CalculateSquareDistanceXY(Position, targetMonster->GetPosition()) > _attackRangeSquare)
+		{
+			printf("attack out of range\n");
+			return;
+		}
 
+		_lastAttackTime = timeNow;
 		bool bDeath = targetMonster->TakeDamage(damage, this);
 
 		CPacket* resDamagePacket = CPacket::Alloc();

@@ -14,4 +14,10 @@ double Util::CalculateRotation(const FVector& oldPosition, const FVector& newPos
 	}
 
 	return yaw;
-}	
+}
+float Util::CalculateSquareDistanceXY(const FVector& a, const FVector& b)
+{
+	float dx = a.X - b.X;
+	float dy = a.Y - b.Y;
+	return dx * dx + dy * dy;
+}

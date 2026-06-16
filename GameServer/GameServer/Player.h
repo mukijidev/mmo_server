@@ -31,6 +31,12 @@ private:
 	bool _bLogined = false;
 	int32 _damage = 10;
 
+	//TODO: 파일로빼기
+private:
+	const float _attackRange = 250.f;
+	const float _attackRangeSquare = _attackRange * _attackRange;
+	const uint32 _attackCoolDown = 500; //클라 0.6s
+	uint32 _lastAttackTime = 0;
 
 public:
 	FVector Position;
