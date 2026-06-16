@@ -128,6 +128,12 @@ void FieldPacketHandleThread::HandleFindPath(Player* player, CPacket* packet)
 		return;
 	}
 
+	uint32 timeNow = timeGetTime();
+	if (timeNow - player->_lastRequestPathTime < FIND_PATH_MIN_INTERVAL_MS)
+		return;
+
+	player->_lastRequestPathTime = timeNow;
+
 	//TODO: 길찾기쓰레드에 넘기고
 	//OnFinishFindRoute에서 player->HandleFinishFindRoute();
 
@@ -138,6 +144,16 @@ void FieldPacketHandleThread::HandleFindPath(Player* player, CPacket* packet)
 		return;
 	}
 	Pos end = {destination.Y, destination.X};
+
+	if (end.y < 0 || end.x < 0 || end.y >= _mapSizeY || end.x >= _mapSizeX)
+		return;
+
+	if (_map[end.y][end.x] == OBSTACLE)
+	{
+		//끝지점이 장애물인경우
+		return;
+	}
+
 	//printf("start : %d %d, end : %d %d\n", start.y, start.x, end.y, end.x);
 	player->bMoving = false;
 	player->_requestPath.clear();

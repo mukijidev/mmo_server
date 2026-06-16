@@ -125,5 +125,6 @@ private:
 	const char* password = DB_PASSWORD;
 	const char* database = "mmo";
 	int port = Data::DBPort;
+
 };
 

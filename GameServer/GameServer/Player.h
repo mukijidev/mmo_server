@@ -81,5 +81,6 @@ public:
 	uint16 _pathIndex = 0;
 	bool _bRequestPath = false;
 	FVector _lastValidPosition;
+	uint32 _lastRequestPathTime = 0;
 };
 
