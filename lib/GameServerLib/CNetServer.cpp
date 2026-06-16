@@ -315,6 +315,13 @@ unsigned __stdcall CNetServer::WorkerThread()
 					__debugbreak();
 				}
 
+				if (header._code != Data::clientPacketCode)
+				{
+					LOG(L"PacketCode", LogLevel::Error, L"packet code error, sessionId=%lld", s->_sessionId);
+					Disconnect(s);
+					break;
+				}
+
 				// len만큼 못빼오는 경우
 				int dataSize = header._len;
 				if (s->_recvQueue.GetUseSize() < sizeof(NetHeader) + dataSize)
@@ -342,6 +349,7 @@ unsigned __stdcall CNetServer::WorkerThread()
 					//checksum 실패했을시
 					//dec io count를 하고 다시 recvpost를 안함으로써 세션을 종료한다
 					Disconnect(s);
+					break;
 				}
 				// 패킷 컨텐츠로 넘기고
 				s->_packetQueue.Enqueue(packet);
