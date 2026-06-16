@@ -89,7 +89,6 @@ void  Monster::Update(float deltaTime)
 
 	case MonsterState::MS_CHASING:
 	{
-		bMoving = true;
 		ChasePlayer(deltaTime);
 	}
 	break;
@@ -343,8 +342,6 @@ bool Monster::MoveToPlayer(float deltaTime)
 			SetDestination({ (double)_path[_pathIndex].x, (double)_path[_pathIndex].y, PLAYER_Z_VALUE });
 		}
 		else {
-			bMoving = false;
-			_path.clear();
 			_pathIndex = 0;
 			//마지막 패스에 도착하면 return false;
 			return false;
@@ -501,6 +498,7 @@ void Monster::SetTargetPlayerEmpty()
 	_targetPlayer = nullptr;
 	_state = MonsterState::MS_IDLE;
 	_idleTime = _defaultIdleTime;
+	_path.clear();
 
 	//idle상태라고 보내기 MonsterStop 패킷
 	CPacket* idlePacket = CPacket::Alloc();
@@ -598,7 +596,7 @@ void Monster::AddSector(Sector* newSector)
 	CPacket::Free(spawnMonsterPacket);
 
 	//이동중이었으면 이동 패킷 보내기
-	if (bMoving)
+	if (IsMoving())
 	{
 		CPacket* monsterMovePacket = CPacket::Alloc();
 		MP_SC_MONSTER_MOVE(monsterMovePacket, _monsterInfo.MonsterID, _position, _path, _pathIndex);

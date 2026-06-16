@@ -63,8 +63,7 @@ public:
 	bool SetRandomDestination();
 	float GetDistanceToPlayer(Player* targetPlayer);
 	void OnSpawn();
-	bool IsMoving() { return bMoving; }
-	
+	bool IsMoving() { return _state == MonsterState::MS_CHASING && !_path.empty(); }
 
 
 //private:
@@ -112,7 +111,6 @@ public:
 	std::vector<Pos> _requestPath;
 	uint16 _pathIndex = 0;
 	bool bRequestPath = false;
-	bool bMoving = false;
 	void HandleAsyncFindPath();
 
 	uint32 mapXSize = 0;

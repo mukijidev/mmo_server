@@ -109,7 +109,7 @@ void Player::OnFieldChange()
 				SendPacket_Unicast(_sessionId, spawnMonsterPacket);
 				CPacket::Free(spawnMonsterPacket);
 
-				if (monster->GetState()  == MonsterState::MS_MOVING)
+				if (monster->IsMoving())
 				{
 					CPacket* movePacket = CPacket::Alloc();
 					MP_SC_MONSTER_MOVE(movePacket, monsterInfo.MonsterID, monsterPosition, monster->_path, monster->_pathIndex);
@@ -534,7 +534,7 @@ void Player::AddSector(Sector* newSector)
 				SendPacket_Unicast(_sessionId, spawnMonsterPacket);
 				CPacket::Free(spawnMonsterPacket);
 
-				if (monster->GetState() == MonsterState::MS_MOVING)
+				if (monster->IsMoving())
 				{
 					CPacket* movePacket = CPacket::Alloc();
 					MP_SC_MONSTER_MOVE(movePacket, monsterInfo.MonsterID, monsterPosition, monster->_path, monster->_pathIndex);
