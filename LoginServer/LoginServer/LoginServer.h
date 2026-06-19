@@ -14,6 +14,7 @@
 
 #define MAX_PLAYER_NUM 10000
 #define MAX_CONNECTION_NUM 50
+#define dfREDIS_TIMEOUT 30
 
 class LoginServer : public CNetServer
 {
@@ -25,7 +26,8 @@ private:
 	void SendPacket_Unicast(Player* p, CPacket* packet);
 	void HandleLogin(Player* player, CPacket* packet);
 	void HandleEcho(Player* player, CPacket* packet);
-	void HandleRecvPacket(Player* player, CPacket* packet);
+	void HandleRecvPacket(Player* player, CPacket* packet); 
+	void HandleSignUp(Player* player, CPacket* packet);
 
 	bool GetUserDataFromMysql(Player* p);
 	void SetUserDataToRedis(Player* p);
@@ -132,7 +134,7 @@ private:
 	const char* host = "127.0.0.1";
 	const char* user = "root";
 	const char* password = DB_PASSWORD;
-	const char* database = "accountdb";
+	const char* database = "mmo";
 	int port = Data::DBPort;
 
 	cpp_redis::client _redisClients[MAX_CONNECTION_NUM];
@@ -155,10 +157,15 @@ private: // client
 	void MP_SS_MONITOR_LOGIN(CPacket* packet, int& serverNo);
 
 private: // server
-	void MP_SC_LOGIN(CPacket* packet, int64& accountNo, uint8& status, WCHAR* gameServerIP, uint16& gameServerPort, WCHAR* chatServerIP, uint16& chatServerPort);
+	void MP_SC_LOGIN(CPacket* packet, int64& accountNo, uint8& status, WCHAR* gameServerIP, uint16& gameServerPort, WCHAR* chatServerIP, uint16& chatServerPort, const char* sessionKey);
 	void MP_SC_ECHO(CPacket* packet);
+	void MP_SC_SIGN_UP(CPacket* packet, uint8& status);
 
 	// CNetServer을(를) 통해 상속됨
 	void OnAccept(int64 sessionId) override;
+
+private:
+	int64 LoginByIdPassword(const char* id, const char* pw);
+	std::string GenerateSessionKey();
 };
 

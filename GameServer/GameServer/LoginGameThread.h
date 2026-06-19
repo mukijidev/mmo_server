@@ -6,6 +6,7 @@
 #include <vector>
 #include "Data.h"
 #include "DBSecret.h"
+#include <cpp_redis/cpp_redis>
 
 class Player;
 class CPacket;
@@ -38,8 +39,15 @@ private:
 	const char* user = "root";
 	const char* password = DB_PASSWORD;
 	const char* database = "mmo";
-	int port = Data::DBPort;
 
+	int port = Data::DBPort;
+	void InitMySQL();
+private:
+	//redis
+	void InitRedis();
+	cpp_redis::client _redisClient;
+
+private:
 
 	int64 lastPlayerId = 0;
 	// GameThread을(를) 통해 상속됨

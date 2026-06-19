@@ -1,6 +1,8 @@
 #pragma comment(lib, "ws2_32")
 #pragma comment(lib, "Winmm.lib")
 #pragma comment(lib, "mysqlclient.lib")
+#pragma comment (lib, "cpp_redis.lib")
+#pragma comment (lib, "tacopie.lib")
 
 #include <conio.h>
 #include <stdio.h>

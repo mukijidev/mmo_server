@@ -1,4 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
+#define _CRT_RAND_S
 
 #include "LoginServer.h"
 #include "SerializeBuffer.h"
@@ -48,8 +49,8 @@ LoginServer::LoginServer()
 		__debugbreak();
 	}
 
-	//InitMySQLConnection();
-	//InitRedisConnection();
+	InitMySQLConnection();
+	InitRedisConnection();
 
 	_hMonitorThread = (HANDLE)_beginthreadex(NULL, 0, MonitorThreadStatic, this, 0, NULL);
 	if (_hMonitorThread == NULL)
@@ -96,6 +97,61 @@ bool LoginServer::OnConnectionRequest()
 void LoginServer::OnAccept(int64 sessionId)
 {
 
+}
+
+int64 LoginServer::LoginByIdPassword(const char* id, const char* pw)
+{
+	MYSQL_STMT* stmt = mysql_stmt_init(_connections[_connectionIndex]);
+	const char* selectQuery = "SELECT AccountNo FROM Account WHERE ID = ? AND PassWord = ?";
+	mysql_stmt_prepare(stmt, selectQuery, (unsigned long)strlen(selectQuery));
+
+	MYSQL_BIND param[2] = {};
+	param[0].buffer_type = MYSQL_TYPE_STRING;
+	param[0].buffer = (void*)id;
+	param[0].buffer_length = (unsigned long)strlen(id);
+	param[1].buffer_type = MYSQL_TYPE_STRING;
+	param[1].buffer = (void*)pw;
+	param[1].buffer_length = (unsigned long)strlen(pw);
+	mysql_stmt_bind_param(stmt, param);
+	mysql_stmt_execute(stmt);
+	
+	int64 accountNo;
+	bool isNull = false;
+	MYSQL_BIND result[1] = {};
+	result[0].buffer_type = MYSQL_TYPE_LONGLONG;
+	result[0].buffer = &accountNo;
+	result[0].is_null = &isNull;
+	mysql_stmt_bind_result(stmt, result);
+	mysql_stmt_store_result(stmt);
+
+	int64 retVal = -1;
+	if (mysql_stmt_fetch(stmt) == 0 && !isNull)
+		retVal = accountNo;
+
+	mysql_stmt_close(stmt);
+	return retVal;
+}
+
+std::string LoginServer::GenerateSessionKey()
+{
+	unsigned char buf[SESSION_KEY_LEN / 2];
+	for (int i = 0; i < SESSION_KEY_LEN / 2; i++)
+	{
+		unsigned int r;
+		rand_s(&r);
+		buf[i] = (unsigned char)r;
+	}
+
+	const char* hx = "0123456789abcdef";
+	string sessionKey;
+	sessionKey.reserve(SESSION_KEY_LEN);
+	for (unsigned char c : buf)
+	{
+		sessionKey.push_back(hx[c >> 4]);
+		sessionKey.push_back(hx[c & 0xF]);
+	}
+
+	return sessionKey;
 }
 
 
@@ -221,6 +277,12 @@ void LoginServer::HandleRecvPacket(Player* player, CPacket* packet)
 	}
 	break;
 
+	case PACKET_CS_LOGIN_REQ_SIGN_UP:
+	{
+		HandleSignUp(player, packet);
+	}
+	break;
+
 	default:
 		LOG(L"Packet", LogLevel::Error, L"Packet Type Not Exist");
 		__debugbreak();//TODO: 악의적인 유저가 이상한 패킷을 보냈다-> 세션 끊는다
@@ -228,6 +290,7 @@ void LoginServer::HandleRecvPacket(Player* player, CPacket* packet)
 
 	CPacket::Free(packet);
 }
+
 
 bool LoginServer::GetUserDataFromMysql(Player* p)
 {
@@ -315,11 +378,46 @@ void LoginServer::HandleLogin(Player* player, CPacket* packet)
 	{
 		_connectionIndex = InterlockedIncrement(&connectionIndexCounter);
 	}
-
-
 	player->_lastRecvTime = timeGetTime();
-	player->_bLogined = true; // 지금은 쓸일 없는데
 	
+	WCHAR wid[dfID_LEN];
+	WCHAR wpw[dfPASSWORD_LEN];
+	packet->GetData((char*)wid, dfID_LEN * sizeof(WCHAR));
+	packet->GetData((char*)wpw, dfPASSWORD_LEN * sizeof(WCHAR));
+	char id[ID_LEN * sizeof(WCHAR)];
+	char password[ID_LEN * sizeof(WCHAR)];
+
+	wcstombs(id, wid, dfID_LEN * sizeof(WCHAR));
+	wcstombs(password, wpw, dfPASSWORD_LEN * sizeof(WCHAR));
+
+	uint8 status = 0;
+	int64 accountNo = LoginByIdPassword(id, password);
+	
+	if (accountNo != -1)
+		status = 1;
+
+	// 로그인 실패
+	if (status == 0)
+	{
+		CPacket* resPacket = CPacket::Alloc();
+		WCHAR ip[IP_LEN] = L"";
+		uint16 zero = 0;
+		MP_SC_LOGIN(resPacket, accountNo, status, ip, zero, ip, zero, nullptr);
+		SendPacket_Unicast(player, resPacket);
+		CPacket::Free(resPacket);
+		return;
+	}
+	
+	player->accountNo = accountNo;
+	player->_bLogined = true;
+
+	player->_sessionKey = GenerateSessionKey();
+
+	//redis;
+	string key = std::to_string(player->accountNo);
+	_redisClients[_connectionIndex].setex(key, dfREDIS_TIMEOUT, player->_sessionKey);
+	_redisClients[_connectionIndex].sync_commit();
+
 
 
 	WCHAR gameServerIP[IP_LEN];
@@ -331,14 +429,65 @@ void LoginServer::HandleLogin(Player* player, CPacket* packet)
 	GetIpForPlayer(player, gameServerIP, gameServerPort, chatServerIP, chatServerPort);
 
 	CPacket* resPacket = CPacket::Alloc();
-	uint8 status = true;
-	MP_SC_LOGIN(resPacket, player->accountNo, status, gameServerIP, gameServerPort, chatServerIP, chatServerPort);
-
+	MP_SC_LOGIN(resPacket, player->accountNo, status, gameServerIP, gameServerPort, chatServerIP, chatServerPort, player->_sessionKey.c_str());
 	SendPacket_Unicast(player, resPacket);
 	//printf("send login packet\n");
 
 	CPacket::Free(resPacket);
 }
+
+
+void LoginServer::HandleSignUp(Player* player, CPacket* packet)
+{
+	if (_connectionIndex == -1)
+	{
+		_connectionIndex = InterlockedIncrement(&connectionIndexCounter);
+	}
+
+	WCHAR wid[dfID_LEN];
+	WCHAR wpw[dfPASSWORD_LEN];
+	packet->GetData((char*)wid, dfID_LEN * sizeof(WCHAR));
+	packet->GetData((char*)wpw, dfPASSWORD_LEN * sizeof(WCHAR));
+	char id[ID_LEN * sizeof(WCHAR)];
+	char password[ID_LEN * sizeof(WCHAR)];
+
+	wcstombs(id, wid, dfID_LEN * sizeof(WCHAR));
+	wcstombs(password, wpw, dfPASSWORD_LEN * sizeof(WCHAR));
+
+	//insert
+	MYSQL_STMT* stmt = mysql_stmt_init(_connections[_connectionIndex]);
+	const char* sql = "INSERT INTO Account(ID, PassWord) VALUES(?, ?)";
+	mysql_stmt_prepare(stmt, sql, (unsigned long)strlen(sql));
+	MYSQL_BIND b[2] = {};
+	b[0].buffer_type = MYSQL_TYPE_STRING;
+	b[0].buffer = id;
+	b[0].buffer_length = (unsigned long)strlen(id);
+	b[1].buffer_type = MYSQL_TYPE_STRING;
+	b[1].buffer = password;
+	b[1].buffer_length = (unsigned long)strlen(password);
+	mysql_stmt_bind_param(stmt, b);
+
+	uint8 status = 1;
+	if (mysql_stmt_execute(stmt))
+	{
+		uint32 err = mysql_stmt_errno(stmt);
+		if (err != 1062)
+		{
+			fprintf(stderr, "쿼리 실행 실패: %s\n", mysql_stmt_error(stmt));
+			__debugbreak();
+		}
+		
+		status = 0;
+	}
+
+	mysql_stmt_close(stmt);
+
+	CPacket* res = CPacket::Alloc();
+	MP_SC_SIGN_UP(res, status);
+	SendPacket_Unicast(player, res);
+	CPacket::Free(res);
+}
+
 
 void LoginServer::HandleEcho(Player* player, CPacket* packet)
 {

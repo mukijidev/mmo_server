@@ -15,32 +15,8 @@ using namespace std;
 LoginGameThread::LoginGameThread(GameServer* gameServer, int threadId, int msPerFrame) : BasePacketHandleThread(gameServer, threadId, msPerFrame)
 {
 	//mysql
-	mysql_init(&_conn);
-	_connection = mysql_real_connect(&_conn, host, user, password, database, port, NULL, 0);
-	if (_connection == NULL) {
-		fprintf(stderr, "Mysql connection error  %s\n", mysql_error(&_conn));
-		__debugbreak();
-	}
-
-	// last_player_id 테이블에서 마지막 PlayerID 가져오기
-	const char* query = "SELECT PlayerID FROM last_player_id LIMIT 1";
-	if (mysql_query(_connection, query))
-	{
-		fprintf(stderr, "querry error: %s\n", mysql_error(_connection));
-	}
-	else 
-	{
-		MYSQL_RES* result = mysql_store_result(_connection);
-		if (result)
-		{
-			MYSQL_ROW row = mysql_fetch_row(result);
-			if (row && row[0])
-			{
-				lastPlayerId = atoll(row[0]); // 문자열을 long long 타입으로 변환
-			}
-			mysql_free_result(result);
-		}
-	}
+	InitMySQL();
+	InitRedis();
 
 	RegisterPacketHandler(PACKET_CS_GAME_REQ_LOGIN, [this](Player* p, CPacket* packet) { HandleLogin(p, packet); });
 	RegisterPacketHandler(PACKET_CS_GAME_REQ_FIELD_MOVE, [this](Player* p, CPacket* packet) { HandleFieldMove(p, packet); });
@@ -75,6 +51,43 @@ void LoginGameThread::OnEnterThread(int64 sessionId, void* ptr)
 		//이거는 두번 발생되면 안되는거고
 		__debugbreak();
 	}
+}
+
+void LoginGameThread::InitMySQL()
+{
+	mysql_init(&_conn);
+	_connection = mysql_real_connect(&_conn, host, user, password, database, port, NULL, 0);
+	if (_connection == NULL) {
+		fprintf(stderr, "Mysql connection error  %s\n", mysql_error(&_conn));
+		__debugbreak();
+	}
+
+	// last_player_id 테이블에서 마지막 PlayerID 가져오기
+	const char* query = "SELECT PlayerID FROM last_player_id LIMIT 1";
+	if (mysql_query(_connection, query))
+	{
+		fprintf(stderr, "querry error: %s\n", mysql_error(_connection));
+	}
+	else
+	{
+		MYSQL_RES* result = mysql_store_result(_connection);
+		if (result)
+		{
+			MYSQL_ROW row = mysql_fetch_row(result);
+			if (row && row[0])
+			{
+				lastPlayerId = atoll(row[0]); // 문자열을 long long 타입으로 변환
+			}
+			mysql_free_result(result);
+		}
+	}
+
+}
+
+void LoginGameThread::InitRedis()
+{
+	_redisClient.connect();
+	if (!_redisClient.is_connected())		__debugbreak();
 }
 
 void LoginGameThread::GameRun(float deltaTime)
@@ -112,73 +125,75 @@ void LoginGameThread::OnLeaveThread(int64 sessionId, bool disconnect)
 
 void LoginGameThread::HandleLogin(Player * player, CPacket * packet)
 {
-	// ID와 Password 추출
-	TCHAR ID[NICKNAME_LEN];
-	TCHAR PassWord[PASS_LEN];
-	packet->GetData((char*)ID, NICKNAME_LEN * sizeof(TCHAR));
-	packet->GetData((char*)PassWord, PASS_LEN * sizeof(TCHAR));
+	int64 accountNo;
+	char sessionToken[SESSION_KEY_LEN];
+	*packet >> accountNo;
+	packet->GetData(sessionToken, SESSION_KEY_LEN);
 
-	// TCHAR를 char로 변환
-	char id[NICKNAME_LEN * sizeof(TCHAR)];
-	char password[PASS_LEN * sizeof(TCHAR)];
-	wcstombs(id, ID, NICKNAME_LEN * sizeof(TCHAR));
-	wcstombs(password, PassWord, PASS_LEN * sizeof(TCHAR));
+	//redis
+	bool bAuthed = false;
+	{
+		string key = to_string(accountNo);
+		auto reply = _redisClient.get(key);
+		_redisClient.sync_commit();
+		auto r = reply.get();
+		if (r.is_string() && r.as_string() == string(sessionToken, SESSION_KEY_LEN))
+		{
+			bAuthed = true;
+			_redisClient.del({ key });
+			_redisClient.sync_commit();
+		}
+	}
 
-	// 쿼리 문자열 생성
+	uint8 status = 0;
+	if (bAuthed)
+		status = 1;
+
+	if (!bAuthed)
+	{
+		CPacket* res = CPacket::Alloc();
+		MP_SC_LOGIN(res, accountNo, status);
+		SendPacket_Unicast(player->_sessionId, res);
+		CPacket::Free(res);
+		return;
+	}
+
+	player->accountNo = accountNo;
 	char query[1024];
-	sprintf(query, "SELECT a.AccountNo, p.PlayerID, p.NickName, p.Class, p.Level, p.Exp \
-		FROM Account a \
-		LEFT JOIN Player p ON a.AccountNo = p.AccountNo \
-		WHERE a.ID = '%s' AND a.PassWord = '%s'", id, password);
-
-	// 쿼리 실행
-	if (mysql_query(&_conn, query))
+	sprintf(query, "SELECT PlayerID, NickName, Class, Level, Exp \
+		From Player Where AccountNo = %lld", accountNo);
+	
+	MYSQL_RES* result = nullptr;
+	if (mysql_query(&_conn, query) != 0 || (result = mysql_store_result(&_conn)) == nullptr)
 	{
-		fprintf(stderr, "쿼리 실행 실패: %s\n", mysql_error(&_conn));
+		//db 실패
+		LOG(L"LoginGameThread", LogLevel::Error, L"db select query accountNo : %lld,", accountNo);
+		CPacket* res = CPacket::Alloc();
+		uint8 status = 0;
+		MP_SC_LOGIN(res, accountNo, status);
+		SendPacket_Unicast(player->_sessionId, res);
+		CPacket::Free(res);
 		return;
 	}
 
-	// 결과 가져오기
-	MYSQL_RES* result = mysql_store_result(&_conn);
-	if (result == NULL)
-	{
-		fprintf(stderr, "결과 저장 실패: %s\n", mysql_error(&_conn));
-		return;
-	}
-
-	int64 AccountNo = -1;
-	// 결과 처리
 	MYSQL_ROW row;
-
 	while ((row = mysql_fetch_row(result)))
 	{
-		AccountNo = atoll(row[0]); // 계정 번호
-		if (row[1] != NULL)
-		{
-			PlayerInfo playerInfo;
-			playerInfo.PlayerID = atoll(row[1]); // 플레이어 ID
-			mbstowcs(playerInfo.NickName, row[2], NICKNAME_LEN);
-			playerInfo.Class = static_cast<uint16>(atoi(row[3])); // 클래스
-			playerInfo.Level = static_cast<uint16>(atoi(row[4])); // 레벨
-			playerInfo.Exp = static_cast<uint32>(atoi(row[5])); // 경험치
-			playerInfo.Hp = 100;
-			player->playerInfos.push_back(playerInfo);
-		}
-
+		PlayerInfo info;
+		info.PlayerID = atoll(row[0]);
+		mbstowcs(info.NickName, row[1], NICKNAME_LEN);
+		info.Class = (uint16)atoi(row[2]);
+		info.Level = (uint16)atoi(row[3]);
+		info.Exp = (uint32)atoi(row[4]);
+		info.Hp = 100;
+		player->playerInfos.push_back(info);
 	}
+	mysql_free_result(result);
+	
 	CPacket* resPacket = CPacket::Alloc();
-	uint8 status = false;
-	if (AccountNo != -1)
-	{
-		status = true;
-		player->accountNo = AccountNo;
-	}
-
-	MP_SC_LOGIN(resPacket, AccountNo, status);
+	MP_SC_LOGIN(resPacket, accountNo, status);
 	SendPacket_Unicast(player->_sessionId, resPacket);
 	CPacket::Free(resPacket);
-	// 정리
-	mysql_free_result(result);
 }
 
 void LoginGameThread::HandleFieldMove(Player* player, CPacket* packet)

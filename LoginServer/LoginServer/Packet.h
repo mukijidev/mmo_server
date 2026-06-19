@@ -38,7 +38,7 @@ enum PACKET_TYPE
 	//		TCHAR	PassWord[20]     //사용자 PassWord. null포함
 	//	}
 	//------------------------------------------------------------
-	PACKET_CS_LOGIN_REQ_LOGIN,
+	PACKET_CS_LOGIN_REQ_LOGIN = 1,
 
 	//------------------------------------------------------------
 	// 로그인 서버에서 클라이언트로 로그인 응답
@@ -57,7 +57,8 @@ enum PACKET_TYPE
 	//	}
 	//
 	//------------------------------------------------------------
-	PACKET_SC_LOGIN_RES_LOGIN,
+	PACKET_SC_LOGIN_RES_LOGIN = 2,
+
 
 
 	//------------------------------------------------------------
@@ -74,6 +75,9 @@ enum PACKET_TYPE
 	//	}
 	//------------------------------------------------------------
 	PACKET_SC_LOGIN_RES_ECHO,
+
+	PACKET_CS_LOGIN_REQ_SIGN_UP = 5,
+	PACKET_SC_LOGIN_RES_SIGN_UP = 6,
 
 	//------------------------------------------------------
 	// Game Server
