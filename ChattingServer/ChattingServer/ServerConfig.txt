@@ -56,6 +56,6 @@
 {
 	ServerPacketCode = 119
 	ServerPacketKey = 119
-	ClientPacketCode = 109
-	ClientPacketKey = 30
+	ClientPacketCode = 119
+	ClientPacketKey = 119
 }
