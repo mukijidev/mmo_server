@@ -346,17 +346,30 @@ void LoginGameThread::HandleCreatePlayer(Player* player, CPacket* packet)
 	}
 
 
-	// 쿼리 문자열 생성
-	char query[1024];
-	sprintf(query, "INSERT INTO Player(PlayerID, AccountNo, NickName, Class) VALUES(%lld, %lld, '%s', %d)", PlayerID, player->accountNo, nickName, Class);
-
 	// 쿼리 실행
-	bool createSuccess = true;
-	if (mysql_query(&_conn, query))
-	{
-		fprintf(stderr, "쿼리 실행 실패: %s\n", mysql_error(&_conn));
-		createSuccess = false;
-	}
+	bool createSuccess = false;
+
+	MYSQL_STMT* stmt = mysql_stmt_init(&_conn);
+	const char* sql = "INSERT INTO Player(PlayerID, AccountNo, NickName, Class) VALUES(?, ?, ?, ?)";
+	mysql_stmt_prepare(stmt, sql, (unsigned long)strlen(sql));
+
+
+	MYSQL_BIND b[4] = {};
+	b[0].buffer_type = MYSQL_TYPE_LONGLONG;
+	b[0].buffer = &PlayerID;
+	b[1].buffer_type = MYSQL_TYPE_LONGLONG;
+	b[1].buffer = &player->accountNo;
+	b[2].buffer_type = MYSQL_TYPE_STRING;
+	b[2].buffer = nickName;
+	b[2].buffer_length = (uint32)strlen(nickName);
+	b[3].buffer_type = MYSQL_TYPE_SHORT;
+	b[3].buffer = &Class;
+	mysql_stmt_bind_param(stmt, b);
+
+	if (mysql_stmt_execute(stmt) == 0)
+		createSuccess = true;
+
+	mysql_stmt_close(stmt);
 
 	//TODO: 플레이어 info에 넣기
 	PlayerInfo playerInfo;
