@@ -155,6 +155,10 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /D /Y "$(ProjectDir)libcrypto-1_1-x64.dll" "$(OutDir)"
+xcopy /D /Y "$(ProjectDir)libssl-1_1-x64.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\lib\DataStructure\TlsObjectPool.cpp" />
