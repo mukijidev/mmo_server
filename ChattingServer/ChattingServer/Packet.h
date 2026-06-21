@@ -278,4 +278,8 @@ enum PACKET_TYPE
 	//
 	//------------------------------------------------------------
 	PACKET_SC_CHAT_RES_MESSAGE = 5004,
+
+	// 채팅서버 섹터 업데이트 ( 클라가 자기섹터 계산해서  변경시 섹터보냄 ) 
+	PACKET_CS_CHAT_REQ_SECTOR_UPDATE = 5005,
+	PACKET_SC_CHAT_RES_SECTOR_UPDATE = 5006,
 };

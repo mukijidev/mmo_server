@@ -149,6 +149,12 @@ unsigned int __stdcall ChattingServer::UpdateThread()
 			}
 			break;
 
+			case PACKET_CS_CHAT_REQ_SECTOR_UPDATE:
+			{
+				HandleSectorUpdate(sessionId, packet);
+				CPacket::Free(packet);
+			}
+			break;
 
 			case 3:
 			{
@@ -302,33 +308,84 @@ void ChattingServer::HandleHeartBeat(int64 sessionId, CPacket* packet)
 	player->_lastRecvTime = timeGetTime();
 }
 
+
 void ChattingServer::HandleMessage(int64 sessionId, CPacket* packet)
 {
 	printf("HandleMessage\n");
-	Player* player = GetPlayer(sessionId);
-	if (player == nullptr)
+	Player* sender = GetPlayer(sessionId);
+	if (sender == nullptr)
 	{
-		//TODO: log
 		__debugbreak();
 		return;
 	}
-	player->_lastRecvTime = timeGetTime();
+	sender->_lastRecvTime = timeGetTime();
+	if (sender->_sectorX == 0xFF)
+	{
+		__debugbreak();
+		return;
+	}
 
 	int64 accountNo;
 	uint16 messageLen;
 	*packet >> accountNo >> messageLen;
-	//*packet >> messageLen;
 	CPacket* resPacket = CPacket::Alloc();
-	MP_SC_CHAT_MESSAGE(resPacket, accountNo, player->NickName, messageLen, packet);
+	MP_SC_CHAT_MESSAGE(resPacket, accountNo, sender->NickName, messageLen, packet);
 
 	for (auto it = _playerMap.begin(); it != _playerMap.end(); ++it)
 	{
-		Player* player = (*it).second;
-		SendPacket_Unicast(player, resPacket);
+		Player* p = (*it).second;
+		if (p->_sectorX == 0xFF)
+			continue;
+
+		if (p->_fieldId != sender->_fieldId)
+			continue;
+
+		if(abs((int)p->_sectorX - (int)sender->_sectorX) > 1) continue;
+		if(abs((int)p->_sectorY - (int)sender->_sectorY) > 1) continue;
+
+		SendPacket_Unicast(p, resPacket);
 	}
-	//MP_SC_CHAT_MESSAGE
-	//TODO: 함수로 정리
 	CPacket::Free(resPacket);
+}
+
+
+
+//void ChattingServer::HandleMessage(int64 sessionId, CPacket* packet)
+//{
+//	printf("HandleMessage\n");
+//	Player* player = GetPlayer(sessionId);
+//	if (player == nullptr)
+//	{
+//		//TODO: log
+//		__debugbreak();
+//		return;
+//	}
+//	player->_lastRecvTime = timeGetTime();
+//
+//	int64 accountNo;
+//	uint16 messageLen;
+//	*packet >> accountNo >> messageLen;
+//	//*packet >> messageLen;
+//	CPacket* resPacket = CPacket::Alloc();
+//	MP_SC_CHAT_MESSAGE(resPacket, accountNo, player->NickName, messageLen, packet);
+//
+//	for (auto it = _playerMap.begin(); it != _playerMap.end(); ++it)
+//	{
+//		Player* player = (*it).second;
+//		SendPacket_Unicast(player, resPacket);
+//	}
+//	//MP_SC_CHAT_MESSAGE
+//	//TODO: 함수로 정리
+//	CPacket::Free(resPacket);
+//}
+
+void ChattingServer::HandleSectorUpdate(int64 sessionId, CPacket* packet)
+{
+	Player* player = GetPlayer(sessionId);
+	if (player == nullptr)
+		return;
+
+	*packet >> player->_fieldId >> player->_sectorX >> player->_sectorY;
 }
 
 

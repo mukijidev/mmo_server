@@ -24,6 +24,7 @@ private:
 	void HandleLogin(int64 sessionId, CPacket* packet);
 	void HandleHeartBeat(int64 sessinId, CPacket* packet);
 	void HandleMessage(int64 sessionId, CPacket* packet);
+	void HandleSectorUpdate(int64 sessionId, CPacket* packet);
 
 private:
 	// CLanServer을(를) 통해 상속됨

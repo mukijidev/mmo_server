@@ -18,5 +18,11 @@ private:
 	uint32 _lastRecvTime = 0;
 	bool _bLogined = false;
 	TCHAR NickName[20];
+
+//sector chat
+private:
+	uint16 _fieldId = 0; // lobby / guardian/ spider
+	uint8 _sectorX = 0xFF;
+	uint8 _sectorY = 0xFF;
 };
 
