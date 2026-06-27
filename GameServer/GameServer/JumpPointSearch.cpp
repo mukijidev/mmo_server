@@ -34,13 +34,18 @@ int gVal[DIRECTION_NUM] = {
 #define df_DIR_LD 6
 #define df_DIR_LU 7
 
-JumpPointSearch::JumpPointSearch(uint8** map, int32 mapYSize, int32 mapXSize)
-{
-	_originMap = map;
-	_mapYSize = mapYSize;
-	_mapXSize = mapXSize;
 
-	_jpsMap = new uint8* [_mapYSize];
+JumpPointSearch::JumpPointSearch(uint8** coarse, int32 cNy, int32 cNx, uint8** fine, int32 fNy, int32 fNx, int cellSize)
+{
+	_originMap = coarse;
+	_mapYSize = cNy;
+	_mapXSize = cNx;
+	_fineMap = fine;
+	_C = cellSize;
+	_fineY = fNy;
+	_fineX = fNx;
+
+	_jpsMap = new uint8 * [_mapYSize];
 	for (int i = 0; i < _mapYSize; i++)
 	{
 		_jpsMap[i] = new uint8[_mapXSize];
@@ -70,6 +75,11 @@ void JumpPointSearch::FindPath(Pos start, Pos end, OUT std::vector<Pos>& returnP
 		return;
 	}
 
+	//길찾기 범위 초과면 거부
+	int dist = abs(_start.x - _dest.x) + abs(_start.y - _dest.y);
+	if (dist > MAX_PATH_RANGE_CELLS)
+		return;
+
 	std::vector<Pos> path;
 	//First : 맵 초기화하고
 	for (int i = 0; i < _mapYSize; ++i)
@@ -91,9 +101,15 @@ void JumpPointSearch::FindPath(Pos start, Pos end, OUT std::vector<Pos>& returnP
 		//길 못찾음
 		return;
 	}
-
+	int expanded = 0;
 	while (true)
 	{
+		if (++expanded > MAX_NODES)
+		{
+			ClearNode();
+			return;
+		}
+
 		//정렬 하고
 		openList.sort(NodeComparator());
 		if(openList.size() == 0)
@@ -281,7 +297,7 @@ int JumpPointSearch::CheckDown(Pos pos)
 		}
 	}
 
-	if (pos.x <= _mapYSize - 2)
+	if (pos.x <= _mapXSize - 2)
 	{
 		// 오른쪽이 obstacle이고 오른쪽아래가 NONE
 		if (GetMapValue(pos + dir[df_DIR_R]) == OBSTACLE && GetMapValue(pos + dir[df_DIR_RD]) != OBSTACLE)
@@ -1211,7 +1227,7 @@ bool JumpPointSearch::CheckAndMakeCorner(Node* p, Pos pos, int direction, uint32
 			//pos는 기존위치이고
 			{
 				Pos toUpPos = pos;
-				int toUpDistance = 10;
+				int toUpDistance = 0;
 				/*****************************************************
 				*
 				*                위 쪽 진 행 로 직
@@ -1405,7 +1421,8 @@ void JumpPointSearch::FindShortestPath(vector<Pos>& path, vector<Pos>& result)
 {
 	if (path.size() < 2)
 	{
-		__debugbreak();
+		result = path;
+		return;
 	}
 
 	//시작노드넣으면안되지
@@ -1451,10 +1468,12 @@ void JumpPointSearch::FindShortestPath(vector<Pos>& path, vector<Pos>& result)
 
 bool JumpPointSearch::CalculateBresenham(Pos start, Pos end)
 {
-	int x2 = _dest.x;
-	int y2 = _dest.y;
-	int x1 = start.x;
-	int y1 = start.y;
+	int x1 = ToWorld(start.x);
+	int y1 = ToWorld(start.y);
+	int x2 = ToWorld(end.x);
+	int y2 = ToWorld(end.y);
+
+
 	// 여기는 그냥 start랑 dest사이의 노드들 _bresenhamNode에 넣고
 	int dx = abs(x2 - x1);
 	int dy = abs(y2 - y1);
@@ -1468,11 +1487,9 @@ bool JumpPointSearch::CalculateBresenham(Pos start, Pos end)
 	{
 		while (true)
 		{
-			Pos pos{ y1, x1 };
-			if (GetMapValue(pos) == OBSTACLE)
-			{
+			if (_fineMap[y1][x1] == OBSTACLE)
 				return false;
-			}
+		
 			// 현재 노드
 			if (x1 == x2 && y1 == y2)
 			{
@@ -1492,11 +1509,9 @@ bool JumpPointSearch::CalculateBresenham(Pos start, Pos end)
 	else {
 		while (true)
 		{
-			Pos pos{ y1, x1 };
-			if (GetMapValue(pos) == OBSTACLE)
-			{
+			if (_fineMap[y1][x1] == OBSTACLE)
 				return false;
-			}
+			
 			// 현재 노드
 			if (x1 == x2 && y1 == y2)
 			{

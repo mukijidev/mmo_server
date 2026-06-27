@@ -4,7 +4,13 @@
 #include <vector>
 #include "Type.h"
 
-#define OMIT_RANGE  10
+#define COARSE_CELL 100
+#define MAX_PATH_RANGE_CELLS 15
+#define MAX_NODES 1000
+
+#define OMIT_RANGE  1
+
+
 enum CellValue {
 	NONE = 0,
 	OBSTACLE = 1,
@@ -60,7 +66,7 @@ class JumpPointSearch
 {
 	//TODO: 생성자로 맵 받고
 public:
-	JumpPointSearch(uint8** map, int32 mapYSize, int32 mapXSize);
+	JumpPointSearch(uint8** coarse, int32 cNy, int32 cNx, uint8** fine, int32 fNy, int32 fNx, int cellSize);
 	~JumpPointSearch();
 
 public:
@@ -102,5 +108,12 @@ private:
 	Pos _start;
 	Pos _dest;
 
+	uint8** _fineMap;
+	int32 _fineY;
+	int32 _fineX;
+	int _C;
+
+	inline int ToCoarse(int world) const { return world / _C; }
+	inline int ToWorld(int cell) const { return cell * _C + _C / 2; };
 };
 

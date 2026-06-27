@@ -15,6 +15,7 @@ class BasePacketHandleThread;
 
 #define REQUEST_FIND_PATH_THRESHOLD 200.0
 #define MAX_ROTATION_DIFFERENCE 30.0
+#define MONSTER_REQUEST_PATH_MAX_FAIL_COUNT 5
 
 enum class MonsterState {
 	MS_IDLE,
@@ -111,6 +112,7 @@ public:
 	std::vector<Pos> _requestPath;
 	uint16 _pathIndex = 0;
 	bool bRequestPath = false;
+	uint16 _pathFailCount = 0;
 	void HandleAsyncFindPath();
 
 	uint32 mapXSize = 0;

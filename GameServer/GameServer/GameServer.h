@@ -109,6 +109,8 @@ private:
 
 private:
 	uint8** LoadMapData(std::string filePath, uint32 mapYSize, uint32 mapXSize);
+	uint8** BuildCoarse(uint8** fine, int fineY, int fineX, int coarV, int& outNy, int& outNx);
+
 
 	//Map
 private:
@@ -116,5 +118,11 @@ private:
 	uint8** _guardianMap = nullptr;
 	uint8** _spiderMap = nullptr;
 
+	uint8** _lobbyCoarse = nullptr;
+	uint8** _guardianCoarse = nullptr;
+	uint8** _spiderCoarse = nullptr;
+
+	int _coarseY = 0;
+	int _coarseX = 0;
 };
 

@@ -177,47 +177,31 @@ void Monster::AttackPlayer(float deltaTime)
 	}
 }
 
-
 void Monster::SetDestination(FVector dest)
 {
 	Pos start = { (int)_position.Y, (int)_position.X };
 	Pos end = { (int)dest.Y, (int)dest.X };
 
 	if (start == end)
-	{
 		return;
-	}
 
-	///////////////////////////////////////////////////////
-	// 이 경우 생기게 하면 안됨
-	if (!GetField()->CheckValidPos(start))
+	bool bStartOk = GetField()->CheckValidPos(start);
+	bool bEndOk = GetField()->CheckValidPos(end);
+
+	if (!bStartOk || !bEndOk)
 	{
-		__debugbreak();
-	}
-
-	// 이 경우 생기게 하면 안됨
-	if (!GetField()->CheckValidPos(end))
-	{
-		__debugbreak();
-	}
-	///////////////////////////////////////////////////////
-
-
-	if (!GetField()->CheckValidPos(start) || !GetField()->CheckValidPos(end))
-	{
-		//이 경우가 생기게 하면 안됨
 		_destination = dest;
 		_rotation.Yaw = Util::CalculateRotation(_position, _destination);
 		SendMovePacket();
 		return;
 	}
-
-	//_destination = dest;
-	//TODO: 클라이언트에 몬스터 이동 패킷 전송
 	bRequestPath = true;
 	_requestPath.clear();
 	GetField()->RequestMonsterPath(this, start, end);
+
+	return;
 }
+
 
 bool Monster::SetRandomDestination()
 {
@@ -388,7 +372,7 @@ void Monster::ChasePlayer(float deltaTime)
 		//true이면 계쏙이동하고
 		if (MoveToPlayer(deltaTime))
 		{
-			printf("chaes player destination %f %f\n", _destination.X, _destination.Y);
+			//printf("chaes player destination %f %f\n", _destination.X, _destination.Y);
 			//printf("목적지 도착\n");
 			//목적지에 도착했으면
 		}
@@ -432,21 +416,28 @@ void Monster::ChasePlayer(float deltaTime)
 
 void Monster::HandleAsyncFindPath()
 {
-	_path.clear();
+	bRequestPath = false;
 	_pathIndex = 0;
-	_path = _requestPath;
+	_path.clear();
+	for (const Pos& c : _requestPath)
+	{
+		_path.push_back({ GetField()->CoarseToWorld(c.y), GetField()->CoarseToWorld(c.x) });
+	}
 
-	if (_path.size() > 0)
+	if (_path.empty())
 	{
-		_destination = { (double)_path[0].x, (double)_path[0].y, _position.Z };
-		_rotation.Yaw = Util::CalculateRotation(_position, _destination);
-		bRequestPath = false;
-		SendMovePacket();
+		if (++_pathFailCount >= MONSTER_REQUEST_PATH_MAX_FAIL_COUNT)
+		{
+			_pathFailCount = 0;
+			SetTargetPlayerEmpty(); // 포기
+		}
+		return;
 	}
-	else if (_path.size() == 0)
-	{
-		__debugbreak();
-	}
+
+	_pathFailCount = 0;
+	_destination = { (double)_path[0].x, (double)_path[0].y, _position.Z };
+	_rotation.Yaw = Util::CalculateRotation(_position, _destination);
+	SendMovePacket();
 }
 
 bool Monster::TakeDamage(int damage, Player* attacker)

@@ -12,7 +12,7 @@ class LobbyFieldThread : public FieldPacketHandleThread
 {
 public:
 	LobbyFieldThread(GameServer* gameServer, int threadId, int msPerFrame,
-		uint16 sectorYLen, uint16 sectorXLen, uint16 sectorYSize, uint16 sectorXSize, uint8** map);
+		uint16 sectorYLen, uint16 sectorXLen, uint16 sectorYSize, uint16 sectorXSize, uint8** map, uint8** coarseMap);
 
 private:
 	//virtual void GameRun(float deltaTime) override;

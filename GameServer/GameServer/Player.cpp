@@ -314,7 +314,10 @@ void Player::HandleAsyncFindPath()
 {
 	_path.clear();
 	_pathIndex = 0;
-	_path = _requestPath;
+	for (const Pos& c : _requestPath)
+	{
+		_path.push_back({ GetField()->CoarseToWorld(c.y), GetField()->CoarseToWorld(c.x) });
+	}
 
 	CPacket* pathPacket = CPacket::Alloc();
 	MP_SC_FIND_PATH(pathPacket, playerInfo.PlayerID, Position, _path, _pathIndex);

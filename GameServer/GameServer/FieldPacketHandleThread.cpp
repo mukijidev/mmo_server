@@ -10,8 +10,8 @@
 using namespace std;
 
 FieldPacketHandleThread::FieldPacketHandleThread(GameServer* gameServer, int threadId, int msPerFrame,
-	uint16 _sectorYLen, uint16 _sectorXLen, uint16 _sectorYSize, uint16 _sectorXSize, uint8** map) :
-	BasePacketHandleThread(gameServer, threadId, msPerFrame), _sectorYLen(_sectorYLen), _sectorXLen(_sectorXLen), _sectorYSize(_sectorYSize), _sectorXSize(_sectorXSize), _map(map)
+	uint16 _sectorYLen, uint16 _sectorXLen, uint16 _sectorYSize, uint16 _sectorXSize, uint8** map, uint8** coarseMap) :
+	BasePacketHandleThread(gameServer, threadId, msPerFrame), _sectorYLen(_sectorYLen), _sectorXLen(_sectorXLen), _sectorYSize(_sectorYSize), _sectorXSize(_sectorXSize), _map(map), _coarseMap(coarseMap)
 {
 	mysql_init(&_conn);
 	_connection = mysql_real_connect(&_conn, host, user, password, database, port, NULL, 0);
@@ -21,7 +21,6 @@ FieldPacketHandleThread::FieldPacketHandleThread(GameServer* gameServer, int thr
 	}
 
 	InitializeSector();
-	InitializeMap();
 	RegisterPacketHandler(PACKET_CS_GAME_REQ_FIELD_MOVE, [this](Player* p, CPacket* packet) { HandleFieldMove(p, packet); });
 	//RegisterPacketHandler(PACKET_CS_GAME_REQ_CHARACTER_MOVE, [this](Player* p, CPacket* packet) { HandleChracterMove(p, packet); });
 	RegisterPacketHandler(PACKET_CS_GAME_REQ_CHARACTER_SKILL, [this](Player* p, CPacket* packet) { HandleCharacterSkill(p, packet); });
@@ -31,8 +30,12 @@ FieldPacketHandleThread::FieldPacketHandleThread(GameServer* gameServer, int thr
 	_mapSizeX = _sectorXLen * _sectorXSize;
 	_mapSizeY = _sectorYLen * _sectorYSize;
 	_map = map;
-	_playerJps = new JumpPointSearch(_map, _mapSizeX, _mapSizeY);
-	_monsterJps = new JumpPointSearch(_map, _mapSizeX, _mapSizeY);
+
+	_coarseY = _mapSizeY / COARSE_CELL;
+	_coarseX = _mapSizeX / COARSE_CELL;
+
+	_playerJps = new JumpPointSearch(_coarseMap, _coarseY, _coarseX, _map, _mapSizeY, _mapSizeX, COARSE_CELL);
+	_monsterJps = new JumpPointSearch(_coarseMap, _coarseY, _coarseX, _map, _mapSizeY, _mapSizeX, COARSE_CELL);
 
 	_dbThread = std::thread(&FieldPacketHandleThread::DBThreadFunc, this);
 }
@@ -136,19 +139,20 @@ void FieldPacketHandleThread::HandleFindPath(Player* player, CPacket* packet)
 
 	//TODO: 길찾기쓰레드에 넘기고
 	//OnFinishFindRoute에서 player->HandleFinishFindRoute();
-
-	Pos start = {player->Position.Y, player->Position.X};
-	if (_map[start.y][start.x] == OBSTACLE)
+	Pos cs = { WorldToCoarse((int)player->Position.Y), WorldToCoarse((int)player->Position.X) };
+	Pos ce = { WorldToCoarse((int)destination.Y), WorldToCoarse((int)destination.X) };
+	
+	if (_coarseMap[cs.y][cs.x] == OBSTACLE)
 	{
 		//시작지점이 장애물인경우
 		return;
 	}
-	Pos end = {destination.Y, destination.X};
 
+	Pos end = {destination.Y, destination.X};
 	if (end.y < 0 || end.x < 0 || end.y >= _mapSizeY || end.x >= _mapSizeX)
 		return;
 
-	if (_map[end.y][end.x] == OBSTACLE)
+	if (_coarseMap[ce.y][ce.x] == OBSTACLE)
 	{
 		//끝지점이 장애물인경우
 		return;
@@ -161,9 +165,9 @@ void FieldPacketHandleThread::HandleFindPath(Player* player, CPacket* packet)
 	//start랑 end 복사로해야하고
 	//또 무엇을 넣어야 길찾기가 끝났을떄 ??
 	RequestAsyncJob(player,
-		[start, end, player, this]()
+		[cs, ce, player, this]()
 		{
-			this->_playerJps->FindPath(start, end, player->_requestPath);
+			this->_playerJps->FindPath(cs, ce, player->_requestPath);
 		}, ASYNC_JOB_THREAD_INDEX_ONE, JOB_PLAYER_FIND_PATH
 	);
 }
@@ -390,10 +394,13 @@ Monster* FieldPacketHandleThread::AllocMonster(uint16 monsterType)
 
 void FieldPacketHandleThread::RequestMonsterPath(Monster* monster, Pos start, Pos dest)
 {
+	Pos cs = { WorldToCoarse(start.y), WorldToCoarse(start.x) };
+	Pos ce = { WorldToCoarse(dest.y),  WorldToCoarse(dest.x) };
+
 	RequestAsyncJob(monster,
-		[monster, start, dest, this]()
+		[monster, cs, ce, this]()
 		{
-			this->_monsterJps->FindPath(start, dest, monster->_requestPath);
+			this->_monsterJps->FindPath(cs, ce, monster->_requestPath);
 		}, ASYNC_JOB_THREAD_INDEX_TWO, JOB_MONSTER_FIND_PATH
 	);
 }
@@ -920,12 +927,4 @@ bool FieldPacketHandleThread::CheckValidPos(Pos pos)
 	return true;
 }
 
-void FieldPacketHandleThread::InitializeMap()
-{
-	_map = new uint8*[_mapSizeY];
-	for (int y = 0; y < _mapSizeY; y++)
-	{
-		_map[y] = new uint8[_mapSizeX];
-	}
-}
 

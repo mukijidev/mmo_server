@@ -28,7 +28,7 @@ class FieldPacketHandleThread : public BasePacketHandleThread
 {
 public:
 	FieldPacketHandleThread(GameServer* gameServer, int threadId, int msPerFrame, 
-		uint16 sectorYLen, uint16 sectorXLen, uint16 sectorYSize, uint16 sectorXSize, uint8** map);
+		uint16 sectorYLen, uint16 sectorXLen, uint16 sectorYSize, uint16 sectorXSize, uint8** map, uint8** coarseMap);
 
 	~FieldPacketHandleThread();
 
@@ -86,11 +86,15 @@ public:
 private:
 	//HandleCharacterMove 요청왔을때 길찾기하는 쓰레드 만들기
 	uint8** _map;
-	void InitializeMap();
 	uint32 _mapSizeX;
 	uint32 _mapSizeY;
 	JumpPointSearch* _playerJps;
 	JumpPointSearch* _monsterJps;
+
+	uint8** _coarseMap;
+	uint32 _coarseY;
+	uint32 _coarseX;
+
 
 
 
@@ -104,6 +108,9 @@ public:
 
 	// BasePacketHandleThread을(를) 통해 상속됨
 	void HandleAsyncJobFinish(void* ptr, uint16 jobType) override;
+
+	int WorldToCoarse(int w) const { return w / COARSE_CELL; }
+	int CoarseToWorld(int c) const { return c * COARSE_CELL + COARSE_CELL / 2; }
 
 	//DB
 public:

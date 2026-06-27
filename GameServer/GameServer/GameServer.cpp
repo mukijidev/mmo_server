@@ -34,9 +34,15 @@ GameServer::GameServer()
 	_guardianMap = LoadMapData("map/GuardianMap.dat", 12000, 12000);
 	_spiderMap = LoadMapData("map/SpiderMap.dat", 12000, 12000);
 
-	_LobbyFieldThread = new LobbyFieldThread(this, FIELD_LOBBY, 100, 15, 15, 800, 800, _lobbyMap);
-	_GuardianFieldThread = new GuardianFieldThread(this, FIELD_GUARDIAN, 100, 15, 15, 800, 800, _guardianMap);
-	_SpiderFieldThread = new SpiderFieldThread(this, FIELD_SPIDER, 100, 15, 15, 800, 800, _spiderMap);
+	_lobbyCoarse = BuildCoarse(_lobbyMap, 12000, 12000, COARSE_CELL, _coarseY, _coarseX);
+	_guardianCoarse = BuildCoarse(_guardianMap, 12000, 12000, COARSE_CELL, _coarseY, _coarseX);
+	_spiderCoarse = BuildCoarse(_spiderMap, 12000, 12000, COARSE_CELL, _coarseY, _coarseX);
+
+
+
+	_LobbyFieldThread = new LobbyFieldThread(this, FIELD_LOBBY, 100, 15, 15, 800, 800, _lobbyMap, _lobbyCoarse);
+	_GuardianFieldThread = new GuardianFieldThread(this, FIELD_GUARDIAN, 100, 15, 15, 800, 800, _guardianMap, _guardianCoarse);
+	_SpiderFieldThread = new SpiderFieldThread(this, FIELD_SPIDER, 100, 15, 15, 800, 800, _spiderMap, _spiderCoarse);
 	
 	_loginGameThread->Start();
 	_LobbyFieldThread->Start();
@@ -197,4 +203,69 @@ bool GameServer::OnConnectionRequest()
 void GameServer::OnError(int errorCode, WCHAR* errorMessage)
 {
 	// 이거는 ??? 
+}
+
+
+uint8** GameServer::LoadMapData(string filePath, uint32 mapYSize, uint32 mapXSize)
+{
+	//TODO: lobbymap.data 가져와서	
+	uint8** map = new uint8 * [mapYSize];
+	for (uint32 i = 0; i < mapYSize; i++)
+	{
+		map[i] = new uint8[mapXSize];
+	}
+
+	FILE* f;
+	fopen_s(&f, filePath.c_str(), "rb");
+	if (f == nullptr)
+	{
+		printf("Cannot open file : %s\n", filePath.c_str());
+		LOG(L"GameServer", LogLevel::Error, L"Cannot open file : %s", filePath.c_str());
+		return nullptr;
+	}
+
+	for (uint32 i = 0; i < mapYSize; i++)
+	{
+		fread(map[i], sizeof(uint8), mapXSize, f);
+	}
+
+	fclose(f);
+	return map;
+}
+
+uint8** GameServer::BuildCoarse(uint8** fine, int fineY, int fineX, int coarV, int& outNy, int& outNx)
+{
+	int nY = fineY / coarV;
+	int nX = fineX / coarV;
+
+	uint8** coarse = new uint8 * [nY];
+	for (int cy = 0; cy < nY; ++cy)
+	{
+		coarse[cy] = new uint8[nX];
+		for (int cx = 0; cx < nX; ++cx)
+		{
+			bool bObs = false;
+			for (int dy = 0; dy < coarV && !bObs; ++dy)
+				for (int dx = 0; dx < coarV; ++dx)
+					if (fine[cy * coarV + dy][cx * coarV + dx] == OBSTACLE)
+					{
+						bObs = true;
+						break;
+					}
+
+			if (bObs)
+
+			{
+				coarse[cy][cx] = OBSTACLE;
+			}
+			else {
+				coarse[cy][cx] = NONE;
+			}
+		}
+	}
+
+	outNy = nY;
+	outNx = nX;
+
+	return coarse;
 }
