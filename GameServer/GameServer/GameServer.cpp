@@ -134,8 +134,13 @@ void GameServer::LogServerInfo()
 	int64 totalPlayerNum = _globalPlayerMap.size();
 	int loginTps = _loginGameThread->GetFps();
 	int fieldThreadTPS = _LobbyFieldThread->GetFps();
-	int64 jpsTps = _LobbyFieldThread->GetJPSFps();
-	int64 jpsQueueSize = _LobbyFieldThread->GetJPSQueueSize();
+
+	int64 lobbyJpsTps = _LobbyFieldThread->GetJPSFps();
+	int64 lobbyJpsQueueSize = _LobbyFieldThread->GetJPSQueueSize();
+	int64 guardianJpsTps = _GuardianFieldThread->GetJPSFps();
+	int64 guardianJpsQueueSize = _GuardianFieldThread->GetJPSQueueSize();
+	int64 spiderJpsTps = _SpiderFieldThread->GetJPSFps();
+	int64 spiderJpsQueueSize = _SpiderFieldThread->GetJPSQueueSize();
 
 	printf("Total Accept : %lld\n\
 Accept TPS : % lld\n\
@@ -152,11 +157,13 @@ send: %d\n\
 recv: %d\n\
 logintTps : %d\n\
 fieldTps : %d\n\
-jpsTps : %lld\n\
-jpsQueueSize : %lld\n\
+[LOBBY]    jpsTps : %lld  queue : %lld\n\
+[GUARDIAN] jpsTps : %lld  queue : %lld\n\
+[SPIDER]   jpsTps : %lld  queue : %lld\n\
 ================\n\
 ", totalAcceptValue, acceptTPSValue, sendMessageTPSValue, recvMessageTPSValue, sessionNum, loginPlayerNum, gamePlayerNum, totalPlayerNum,
-totalDisconnect, disconnectBySendQueueFull, processUserAllocMemory, networkSend, networkRecv, loginTps, fieldThreadTPS, jpsTps, jpsQueueSize);
+totalDisconnect, disconnectBySendQueueFull, processUserAllocMemory, networkSend, networkRecv, loginTps, fieldThreadTPS,
+lobbyJpsTps, lobbyJpsQueueSize, guardianJpsTps, guardianJpsQueueSize, spiderJpsTps, spiderJpsQueueSize);
 }
 
 

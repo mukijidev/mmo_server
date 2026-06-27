@@ -349,7 +349,19 @@ void FieldPacketHandleThread::ReturnFieldObject(int64 objectId)
 
 	case TYPE_MONSTER:
 	{
-		_monsterPool.Free((Monster*)fieldObject);
+		Monster* monster = (Monster*)fieldObject;
+		vector<FieldObject*>& vec = monster->_currentSector->fieldObjectVector;
+		auto it = std::find(vec.begin(), vec.end(), fieldObject);
+		if (it != vec.end())
+		{
+			vec.erase(it);
+		} else
+		{
+			__debugbreak();
+		}
+
+
+		_monsterPool.Free(monster);
 		//_monsterMap.erase(objectId);
 	}
 	break;

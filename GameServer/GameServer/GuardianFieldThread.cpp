@@ -47,6 +47,13 @@ void GuardianFieldThread::FrameUpdate(float deltaTime)
 			it++;
 		}
 	}
+
+	for (int y = 0; y < _sectorYLen; y++)        
+		for (int x = 0; x < _sectorXLen; x++)
+			for (FieldObject* f : _sector[y][x].fieldObjectVector)
+				if (_fieldObjectMap.find(f->GetObjectId()) == _fieldObjectMap.end())
+					__debugbreak();  
+
 }
 
 void GuardianFieldThread::SpawnMonster()

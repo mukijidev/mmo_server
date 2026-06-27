@@ -102,7 +102,7 @@ void LoginGameThread::HandleAsyncJobFinish(void* ptr, uint16 jobType)
 
 void LoginGameThread::OnLeaveThread(int64 sessionId, bool disconnect)
 {
-	printf("OnLeaveThread \n");
+	//printf("OnLeaveThread \n");
 
 	//TODO: 여기서 없으면 끝
 	if (disconnect)
@@ -262,7 +262,7 @@ void LoginGameThread::HandleRequestPlayerList(Player* player, CPacket* packet)
 	SendPacket_Unicast(player->_sessionId, resPacket);
 	CPacket::Free(resPacket);
 
-	printf("HandleRequestPlayerList \n");
+	//printf("HandleRequestPlayerList \n");
 }
 
 void LoginGameThread::HandleSelectPlayer(Player* player, CPacket* packet)
@@ -287,7 +287,7 @@ void LoginGameThread::HandleSelectPlayer(Player* player, CPacket* packet)
 	MP_SC_SELECT_PLAYER(resPacket, Status);
 	SendPacket_Unicast(player->_sessionId, resPacket);
 	CPacket::Free(resPacket);
-	printf("HandleSelectPlayer \n");
+	//printf("HandleSelectPlayer \n");
 }
 
 

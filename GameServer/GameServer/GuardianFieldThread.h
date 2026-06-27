@@ -22,6 +22,6 @@ public:
 private:
 	//∏ÛΩ∫≈Õ
 	void SpawnMonster();
-	int32 _maxMonsterNum = 10;
+	int32 _maxMonsterNum = 20;
 };
 

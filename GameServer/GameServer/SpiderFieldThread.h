@@ -18,5 +18,5 @@ private:
 	//∏ÛΩ∫≈Õ
 	virtual void FrameUpdate(float deltaTime) override;
 	void SpawnMonster();
-	int32 _maxMonsterNum = 10000;
+	int32 _maxMonsterNum = 20;
 };

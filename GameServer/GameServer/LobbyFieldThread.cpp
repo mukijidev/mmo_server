@@ -104,6 +104,8 @@ void LobbyFieldThread::OnEnterThread(int64 sessionId, void* ptr)
 		spawnY = rand() % GetMapYSize();
 	}
 
+	spawnX = 8000 + rand() % 200;
+	spawnY = 8000 + rand() % 200;
 	//int spawnX = GetMapXSize() / 2 + rand() % 300;
 	//int spawnY = GetMapYSize() / 2 + rand() % 300;
 
