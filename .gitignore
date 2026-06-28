@@ -366,6 +366,7 @@ FodyWeavers.xsd
 
 */.claude/settings.local.json
 *.md
+!/README.md
 
 DBSecret.h
 *.dll
