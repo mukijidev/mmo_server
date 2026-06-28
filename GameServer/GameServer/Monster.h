@@ -65,7 +65,7 @@ public:
 	float GetDistanceToPlayer(Player* targetPlayer);
 	void OnSpawn();
 	bool IsMoving() { return _state == MonsterState::MS_CHASING && !_path.empty(); }
-
+	void SendAround(CPacket* packet);
 
 //private:
 //	void SendIdlePacket();

@@ -243,7 +243,8 @@ void Player::HandleCharacterAttack(int32 attackerType, int64 attackerId, int32 t
 			FVector monsterPosition = targetMonster->GetPosition();
 			FRotator monsterRotation = targetMonster->GetRotation();
 			MP_SC_GAME_RES_MONSTER_DEATH(monsterDeathPacket, targetId, monsterPosition, monsterRotation);
-			SendPacket_Around(monsterDeathPacket);
+			//SendPacket_Around(monsterDeathPacket);
+			targetMonster->SendAround(monsterDeathPacket);
 			CPacket::Free(monsterDeathPacket);
 
 			uint16 monsterType  = targetMonster->GetMonsterInfo().Type;

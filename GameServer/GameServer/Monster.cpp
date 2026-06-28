@@ -516,6 +516,11 @@ void Monster::OnSpawn()
 	CPacket::Free(packet);
 }
 
+void Monster::SendAround(CPacket* packet)
+{
+	SendPacket_Around(packet);
+}
+
 void Monster::SetTargetPlayerEmpty()
 {
 	_targetPlayer = nullptr;
