@@ -16,7 +16,7 @@ public:
 
 	LockFreeQueue()
 	{
-		_head = new Node;
+		_head = _objectPool.Alloc();
 		_head->_next = NULL;
 		_tail = _head;
 
