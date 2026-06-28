@@ -127,7 +127,8 @@ void FieldPacketHandleThread::HnadleCharacterAttack(Player* player, CPacket* pac
 
 	*packet >> attackerType >> attackerID >> targetType >> targetID;
 
-	player->HandleCharacterAttack(attackerType, attackerID, targetType, targetID);
+	player->HandleCharacterAttack(attackerType, attackerID, targetType, targetID); 
+		_dbgAttack++;
 }
 
 void FieldPacketHandleThread::HandleFindPath(Player* player, CPacket* packet)
@@ -137,15 +138,20 @@ void FieldPacketHandleThread::HandleFindPath(Player* player, CPacket* packet)
 	FVector destination;
 	//FRotator startRotation;
 	*packet >> destination;
+	_dbgRecv++;
 
 	if (player->_bRequestPath)
 	{
+		_dbgFlag++;
 		return;
 	}
 
 	uint32 timeNow = timeGetTime();
 	if (timeNow - player->_lastRequestPathTime < FIND_PATH_MIN_INTERVAL_MS)
+	{
+		_dbgInterval++;
 		return;
+	}
 
 	player->_lastRequestPathTime = timeNow;
 
@@ -163,22 +169,29 @@ void FieldPacketHandleThread::HandleFindPath(Player* player, CPacket* packet)
 
 	if (cs == ce)
 	{
+		_dbgSameCell++;
 		player->ApplyPath({}, rawStart, rawDest);
 		return;
 	}
 
 	if (_coarseMap[cs.y][cs.x] == OBSTACLE)
 	{
+
+		_dbgObstacle++;
 		//시작지점이 장애물인경우
 		return;
 	}
 
 	Pos end = {destination.Y, destination.X};
 	if (end.y < 0 || end.x < 0 || end.y >= _mapSizeY || end.x >= _mapSizeX)
+	{
+		_dbgObstacle++;
 		return;
+	}
 
 	if (_coarseMap[ce.y][ce.x] == OBSTACLE)
 	{
+		_dbgObstacle++;
 		//끝지점이 장애물인경우
 		return;
 	}
@@ -194,6 +207,7 @@ void FieldPacketHandleThread::HandleFindPath(Player* player, CPacket* packet)
 	res->rawStart = rawStart;
 	res->rawDest = rawDest;
 
+	_dbgRequest++;
 	RequestAsyncJob(player->GetObjectId(),
 		[cs, ce, res, this]()
 		{
@@ -506,6 +520,16 @@ void FieldPacketHandleThread::DBThreadFunc()
 
 	return;
 }
+
+void FieldPacketHandleThread::LogAndResetFindPathDebug(const char* name)
+{
+	printf("[%s] recv:%d disp:%d attack:%d| flag:%d thr:%d same:%d obs:%d\n",
+		name, _dbgRecv, _dbgRequest, _dbgAttack, _dbgFlag, _dbgInterval, _dbgSameCell, _dbgObstacle);
+	
+	_dbgAttack = _dbgRecv = _dbgRequest = _dbgFlag = _dbgInterval = _dbgSameCell = _dbgObstacle = 0;
+
+}
+
 
 void FieldPacketHandleThread::AddDBJob(std::function<void()> job)
 {

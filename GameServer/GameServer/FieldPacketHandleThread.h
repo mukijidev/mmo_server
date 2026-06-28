@@ -145,5 +145,11 @@ private:
 	const char* database = "mmo";
 	int port = Data::DBPort;
 
+
+	int _dbgRecv = 0, _dbgRequest = 0, _dbgFlag = 0, _dbgInterval = 0, _dbgSameCell = 0, _dbgObstacle = 0;
+	int _dbgAttack = 0;;
+public:
+	void LogAndResetFindPathDebug(const char* name);
+
 };
 

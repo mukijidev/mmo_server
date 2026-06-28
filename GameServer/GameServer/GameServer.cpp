@@ -170,6 +170,11 @@ fieldTps : %d\n\
 ", totalAcceptValue, acceptTPSValue, sendMessageTPSValue, recvMessageTPSValue, sessionNum, loginPlayerNum, gamePlayerNum, totalPlayerNum,
 totalDisconnect, disconnectBySendQueueFull, processUserAllocMemory, networkSend, networkRecv, loginTps, fieldThreadTPS,
 lobbyJpsTps, lobbyJpsQueueSize, guardianJpsTps, guardianJpsQueueSize, spiderJpsTps, spiderJpsQueueSize);
+
+	//_LobbyFieldThread->LogAndResetFindPathDebug("LOBBY");
+	//_GuardianFieldThread->LogAndResetFindPathDebug("GUARDIAN");
+	//_SpiderFieldThread->LogAndResetFindPathDebug("SPIDER");
+
 }
 
 
