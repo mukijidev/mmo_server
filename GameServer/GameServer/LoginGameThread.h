@@ -7,6 +7,7 @@
 #include "Data.h"
 #include "DBSecret.h"
 #include <cpp_redis/cpp_redis>
+#include <memory>
 
 class Player;
 class CPacket;
@@ -55,7 +56,7 @@ private:
 
 private:
 	// BasePacketHandleThread을(를) 통해 상속됨
-	void HandleAsyncJobFinish(void* ptr, uint16 jobType) override;
+	void HandleAsyncJobFinish(int64 objectId, uint16 jobType,std::shared_ptr<void> result) override;
 
 };
 

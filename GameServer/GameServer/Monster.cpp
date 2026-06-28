@@ -196,7 +196,7 @@ void Monster::SetDestination(FVector dest)
 		return;
 	}
 	bRequestPath = true;
-	_requestPath.clear();
+	//_requestPath.clear();
 	GetField()->RequestMonsterPath(this, start, end);
 
 	return;
@@ -346,7 +346,7 @@ bool Monster::MoveToPlayer(float deltaTime)
 		return true;
 	}
 
-	printf("ProcessSectorChange\n");
+	//printf("ProcessSectorChange\n");
 	Sector* currentSector = _currentSector;
 	Sector* newSector = GetField()->GetSector(newSectorY, newSectorX);
 	ProcessSectorChange(newSector);
@@ -414,12 +414,13 @@ void Monster::ChasePlayer(float deltaTime)
 	}
 }
 
-void Monster::HandleAsyncFindPath()
+void Monster::ApplyPath(const std::vector<Pos>& src, const Pos& rawStart, const Pos& rawDest)
 {
 	bRequestPath = false;
 	_pathIndex = 0;
 	_path.clear();
-	for (const Pos& c : _requestPath)
+
+	for (const Pos& c : src)
 	{
 		_path.push_back({ GetField()->CoarseToWorld(c.y), GetField()->CoarseToWorld(c.x) });
 	}
@@ -433,12 +434,43 @@ void Monster::HandleAsyncFindPath()
 		}
 		return;
 	}
+	else {
+		_path.back() = rawDest;
+		if (_path.size() >= 2)
+			_path.front() = rawStart;
+	}
 
 	_pathFailCount = 0;
 	_destination = { (double)_path[0].x, (double)_path[0].y, _position.Z };
 	_rotation.Yaw = Util::CalculateRotation(_position, _destination);
 	SendMovePacket();
 }
+
+//void Monster::HandleAsyncFindPath()
+//{
+//	bRequestPath = false;
+//	_pathIndex = 0;
+//	_path.clear();
+//	for (const Pos& c : _requestPath)
+//	{
+//		_path.push_back({ GetField()->CoarseToWorld(c.y), GetField()->CoarseToWorld(c.x) });
+//	}
+//
+//	if (_path.empty())
+//	{
+//		if (++_pathFailCount >= MONSTER_REQUEST_PATH_MAX_FAIL_COUNT)
+//		{
+//			_pathFailCount = 0;
+//			SetTargetPlayerEmpty(); // Æ÷±â
+//		}
+//		return;
+//	}
+//
+//	_pathFailCount = 0;
+//	_destination = { (double)_path[0].x, (double)_path[0].y, _position.Z };
+//	_rotation.Yaw = Util::CalculateRotation(_position, _destination);
+//	SendMovePacket();
+//}
 
 bool Monster::TakeDamage(int damage, Player* attacker)
 {

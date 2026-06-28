@@ -15,15 +15,14 @@ public:
 		uint16 sectorYLen, uint16 sectorXLen, uint16 sectorYSize, uint16 sectorXSize, uint8** map, uint8** coarseMap);
 
 private:
-	//virtual void GameRun(float deltaTime) override;
-	// GameThread을(를) 통해 상속됨
-	void OnLeaveThread(int64 sessionId, bool disconnect) override;
-	void OnEnterThread(int64 sessionId, void* ptr) override;
+
 
 private:
 	void HandleCharacterAttack(Player* p, CPacket* packet);
 	void UpdatePlayers(float deltaTime);
 
+protected:
+	//virtual void GetSpawnXY(int& outX, int& outY) override;s
 
 public:
 	// FieldPacketHandleThread을(를) 통해 상속됨

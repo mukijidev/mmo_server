@@ -8,6 +8,7 @@
 #include "Data.h"
 #include "DBSecret.h"
 #include <queue>
+#include <memory>
 
 
 class CPacket;
@@ -23,6 +24,11 @@ class FieldObject;
 //  ReqCharacterSkill
 //  ReqCharacterStop
 
+struct PathResult {
+	std::vector<Pos> path;
+	Pos rawStart;
+	Pos rawDest;
+};
 
 class FieldPacketHandleThread : public BasePacketHandleThread
 {
@@ -40,16 +46,22 @@ protected:
 	void HnadleCharacterAttack(Player* player, CPacket* packet);
 	//void HandleCharacterNextPath(Player* player, CPacket* packet);
 	void HandleFindPath(Player* player, CPacket* packet);
+public:
+	bool LineClear(Pos wa, Pos wb); // world
 
 
 protected:
-	void HandleAsyncFindPath(Player* player);
+	//void HandleAsyncFindPath(Player* player);
 
 private:
 	virtual void GameRun(float deltaTime) override;
 	virtual void FrameUpdate(float deltaTime) = 0;
 	virtual void OnEnterThread(int64 sessionId, void* ptr) override;
 	virtual void OnLeaveThread(int64 sessionId, bool disconnect) override;
+
+protected:
+	virtual void GetSpawnXY(int& outX, int& outY);
+	
 
 public:
 	FieldObject* FindFieldObject(int64 objectId);
@@ -107,7 +119,7 @@ public:
 	void RequestMonsterPath(Monster* monster, Pos start, Pos dest);
 
 	// BasePacketHandleThread을(를) 통해 상속됨
-	void HandleAsyncJobFinish(void* ptr, uint16 jobType) override;
+	void HandleAsyncJobFinish(int64 objectId, uint16 jobType, std::shared_ptr<void> result) override;
 
 	int WorldToCoarse(int w) const { return w / COARSE_CELL; }
 	int CoarseToWorld(int c) const { return c * COARSE_CELL + COARSE_CELL / 2; }

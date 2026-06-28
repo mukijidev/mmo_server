@@ -57,6 +57,7 @@ public:
 	void HandleCharacterStop(FVector position, FRotator rotation);
 	void HandleCharacterAttack(int32 attackerType, int64 attackerId, int32 targetType, int64 targetId);
 	void HandleAsyncFindPath();
+	void ApplyPath(const std::vector<Pos>& src, const Pos& rawStart, const Pos& rawaDest);
 private:
 	FVector _destination;
 	float _speed;
@@ -77,7 +78,6 @@ public:
 	void AddSector(Sector* newSEctor);
 	void RemoveSector(Sector* newSector);
 	std::vector<Pos> _path;
-	std::vector<Pos> _requestPath;
 	uint16 _pathIndex = 0;
 	bool _bRequestPath = false;
 	FVector _lastValidPosition;

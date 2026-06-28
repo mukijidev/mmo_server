@@ -109,12 +109,11 @@ public:
 //	bool bRequestPath = false;
 
 	std::vector<Pos> _path;
-	std::vector<Pos> _requestPath;
 	uint16 _pathIndex = 0;
 	bool bRequestPath = false;
 	uint16 _pathFailCount = 0;
 	void HandleAsyncFindPath();
-
+	void ApplyPath(const std::vector<Pos>& src, const Pos& rawStart, const Pos& rawDest);
 	uint32 mapXSize = 0;
 	uint32 mapYSize = 0;
 };

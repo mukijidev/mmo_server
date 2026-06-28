@@ -96,7 +96,7 @@ void LoginGameThread::GameRun(float deltaTime)
 }
 
 
-void LoginGameThread::HandleAsyncJobFinish(void* ptr, uint16 jobType)
+void LoginGameThread::HandleAsyncJobFinish(int64 objectId, uint16 jobType, std::shared_ptr<void> result)
 {
 }
 

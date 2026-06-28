@@ -64,6 +64,18 @@ void FieldPacketHandleThread::HandleFieldMove(Player* player, CPacket* packet)
 	uint16 fieldID;
 	*packet >> fieldID;
 	
+	player->StopMove();
+	player->_bRequestPath = false;
+	player->_path.clear();
+
+	//current sector에서 미리 정리
+	{
+		auto& v = player->_currentSector->fieldObjectVector;
+		auto it = std::find(v.begin(), v.end(), (FieldObject*)player);
+		if (it != v.end()) 
+			v.erase(it);
+	}
+
 	MoveGameThread(fieldID, player->GetSessionId(), player);
 }
 
@@ -141,7 +153,20 @@ void FieldPacketHandleThread::HandleFindPath(Player* player, CPacket* packet)
 	//OnFinishFindRoute에서 player->HandleFinishFindRoute();
 	Pos cs = { WorldToCoarse((int)player->Position.Y), WorldToCoarse((int)player->Position.X) };
 	Pos ce = { WorldToCoarse((int)destination.Y), WorldToCoarse((int)destination.X) };
-	
+	Pos rawStart = { (int)player->Position.Y, (int)player->Position.X };
+	Pos rawDest = { (int)destination.Y, (int)destination.X }; 
+
+	//printf("[REQ] pos(%.0f,%.0f) dst(%.0f,%.0f) cs(y%d,x%d)obs=%d ce(y%d,x%d)obs=%d dist=%d\n",
+	//	player->Position.X, player->Position.Y, destination.X, destination.Y,
+	//	cs.y, cs.x, _coarseMap[cs.y][cs.x], ce.y, ce.x, _coarseMap[ce.y][ce.x],
+	//	abs(cs.x - ce.x) + abs(cs.y - ce.y));
+
+	if (cs == ce)
+	{
+		player->ApplyPath({}, rawStart, rawDest);
+		return;
+	}
+
 	if (_coarseMap[cs.y][cs.x] == OBSTACLE)
 	{
 		//시작지점이 장애물인경우
@@ -160,23 +185,35 @@ void FieldPacketHandleThread::HandleFindPath(Player* player, CPacket* packet)
 
 	//printf("start : %d %d, end : %d %d\n", start.y, start.x, end.y, end.x);
 	player->bMoving = false;
-	player->_requestPath.clear();
+	//player->_requestPath.clear();
 	player->_bRequestPath = true;
 	//start랑 end 복사로해야하고
 	//또 무엇을 넣어야 길찾기가 끝났을떄 ??
-	RequestAsyncJob(player,
-		[cs, ce, player, this]()
+
+	auto res = std::make_shared<PathResult>();
+	res->rawStart = rawStart;
+	res->rawDest = rawDest;
+
+	RequestAsyncJob(player->GetObjectId(),
+		[cs, ce, res, this]()
 		{
-			this->_playerJps->FindPath(cs, ce, player->_requestPath);
-		}, ASYNC_JOB_THREAD_INDEX_ONE, JOB_PLAYER_FIND_PATH
+			this->_playerJps->FindPath(cs, ce, res->path);
+		}, ASYNC_JOB_THREAD_INDEX_ONE, JOB_PLAYER_FIND_PATH, res
 	);
 }
 
-
-void FieldPacketHandleThread::HandleAsyncFindPath(Player* player)
+bool FieldPacketHandleThread::LineClear(Pos wa, Pos wb)
 {
-	player->HandleAsyncFindPath();
+	Pos a = { WorldToCoarse(wa.y), WorldToCoarse(wa.x) };
+	Pos b = { WorldToCoarse(wb.y), WorldToCoarse(wb.x) };
+	return _playerJps->CalculateBresenham(a, b);
 }
+
+
+//void FieldPacketHandleThread::HandleAsyncFindPath(Player* player)
+//{
+//	player->HandleAsyncFindPath();
+//}
 
 void FieldPacketHandleThread::GameRun(float deltaTime)
 {
@@ -222,7 +259,8 @@ void FieldPacketHandleThread::OnEnterThread(int64 sessionId, void* ptr)
 		__debugbreak();
 	}
 
-
+	p->_bRequestPath = false;   // ★추가
+	p->_path.clear();
 	p->StopMove();
 	// 필드 이동 응답 보내고, 로그인쓰레드에서 fieldID 받긴하는데 어차피 처음엔 lobby니가
 	CPacket* packet = CPacket::Alloc();
@@ -235,8 +273,9 @@ void FieldPacketHandleThread::OnEnterThread(int64 sessionId, void* ptr)
 	CPacket::Free(packet);
 
 	// 내 캐릭터 소환 패킷 보내고
-	int spawnX = _mapSizeX / 2 + rand() % 300;
-	int spawnY = _mapSizeY / 2 + rand() % 300;
+	int spawnX;
+	int spawnY;
+	GetSpawnXY(spawnX, spawnY);
 	CPacket* spawnCharacterPacket = CPacket::Alloc();
 
 	FVector spawnLocation{ spawnX, spawnY,  PLAYER_Z_VALUE };
@@ -292,12 +331,16 @@ void FieldPacketHandleThread::OnLeaveThread(int64 sessionId, bool disconnect)
 	}
 
 	//섹터에서 삭제
-	auto vectorIt = std::find(player->_currentSector->fieldObjectVector.begin(), player->_currentSector->fieldObjectVector.end(), (FieldObject*)player);
-	if (vectorIt == player->_currentSector->fieldObjectVector.end())
+	if (disconnect)
 	{
-		__debugbreak();
+		auto vectorIt = std::find(player->_currentSector->fieldObjectVector.begin(), player->_currentSector->fieldObjectVector.end(), (FieldObject*)player);
+		if (vectorIt == player->_currentSector->fieldObjectVector.end())
+		{
+			__debugbreak();
+		}
+		player->_currentSector->fieldObjectVector.erase(vectorIt);
 	}
-	player->_currentSector->fieldObjectVector.erase(vectorIt);
+	
 
 
 	//필드 오브젝트 맵에서 삭제
@@ -397,30 +440,48 @@ void FieldPacketHandleThread::RequestMonsterPath(Monster* monster, Pos start, Po
 	Pos cs = { WorldToCoarse(start.y), WorldToCoarse(start.x) };
 	Pos ce = { WorldToCoarse(dest.y),  WorldToCoarse(dest.x) };
 
-	RequestAsyncJob(monster,
-		[monster, cs, ce, this]()
+	Pos rawStart = start;
+	Pos rawDest = dest;
+
+
+	auto res = std::make_shared<PathResult>();
+	res->rawStart = rawStart;
+	res->rawDest = rawDest;
+
+
+	RequestAsyncJob(monster->GetObjectId(),
+		[res, cs, ce, this]()
 		{
-			this->_monsterJps->FindPath(cs, ce, monster->_requestPath);
-		}, ASYNC_JOB_THREAD_INDEX_TWO, JOB_MONSTER_FIND_PATH
+			this->_monsterJps->FindPath(cs, ce, res->path);
+		}, ASYNC_JOB_THREAD_INDEX_TWO, JOB_MONSTER_FIND_PATH, res
 	);
 }
 
-void FieldPacketHandleThread::HandleAsyncJobFinish(void* ptr, uint16 jobType)
+void FieldPacketHandleThread::HandleAsyncJobFinish(int64 objectId, uint16 jobType, std::shared_ptr<void> result)
 {
+	auto it = _fieldObjectMap.find(objectId);
+	if (it == _fieldObjectMap.end())
+		return;
+
+	FieldObject* obj = it->second;
+	if (obj->GetField() != this) return;
+
+	auto pr = std::static_pointer_cast<PathResult>(result);
+
+
 	switch (jobType)
 	{
 		case JOB_PLAYER_FIND_PATH:
 		{
-			Player* player = (Player*)ptr;
-			player->HandleAsyncFindPath();
-			//HandleAsyncFindPath(player);
+			Player* player = static_cast<Player*>(obj);
+			player->ApplyPath(pr->path, pr->rawStart, pr->rawDest);
 		}
 		break;
 
 		case JOB_MONSTER_FIND_PATH:
 		{
-			Monster* monster = (Monster*)ptr;
-			monster->HandleAsyncFindPath();
+			Monster* monster = static_cast<Monster*>(obj);
+			monster->ApplyPath(pr->path, pr->rawStart, pr->rawDest);
 		}
 		break;
 
@@ -925,6 +986,32 @@ bool FieldPacketHandleThread::CheckValidPos(Pos pos)
 	}
 
 	return true;
+}
+
+void FieldPacketHandleThread::GetSpawnXY(int& outX, int& outY)
+{
+	
+
+	const int margin = 100; // 
+	for (int tries = 0; tries < 128; ++tries)
+	{
+		int x = margin + rand() % ((int)_mapSizeX - 2 * margin);
+		int y = margin + rand() % ((int)_mapSizeY - 2 * margin);
+
+		int cx = std::clamp(x / COARSE_CELL, 0, (int)_coarseX - 1);
+		int cy = std::clamp(y / COARSE_CELL, 0, (int)_coarseY - 1);
+
+		if (_coarseMap[cy][cx] != OBSTACLE)
+		{
+			outX = x;
+			outY = y;
+			return;
+		}
+	}
+
+	// if cannot find?
+	outX = (int)_mapSizeX / 2;
+	outY = (int)_mapSizeY / 2;
 }
 
 

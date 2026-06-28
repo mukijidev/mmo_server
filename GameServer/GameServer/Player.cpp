@@ -165,7 +165,7 @@ void Player::HandleCharacterAttack(int32 attackerType, int64 attackerId, int32 t
 	if (timeNow - _lastAttackTime < _attackCoolDown)
 	{
 		//쿨다운 안지남
-		printf("attack cooldonw : playerId = %lld\m", playerInfo.PlayerID);
+		//printf("attack cooldonw : playerId = %lld\m", playerInfo.PlayerID);
 		return;
 	}
 
@@ -186,7 +186,7 @@ void Player::HandleCharacterAttack(int32 attackerType, int64 attackerId, int32 t
 		//사거리
 		if (Util::CalculateSquareDistanceXY(Position, targetPlayer->Position) > _attackRangeSquare)
 		{
-			printf("attack out of range\n");
+			//printf("attack out of range\n");
 			return;
 		}
 		bool bDeath = targetPlayer->TakeDamage(damage);
@@ -214,7 +214,7 @@ void Player::HandleCharacterAttack(int32 attackerType, int64 attackerId, int32 t
 		Monster* targetMonster  = static_cast<Monster*>(FindFieldObject(targetId));
 		if (targetMonster == nullptr)
 		{
-			printf("targetMonster is nullptr\n");
+			//printf("targetMonster is nullptr\n");
 			return;
 		}
 		
@@ -225,7 +225,7 @@ void Player::HandleCharacterAttack(int32 attackerType, int64 attackerId, int32 t
 
 		if (Util::CalculateSquareDistanceXY(Position, targetMonster->GetPosition()) > _attackRangeSquare)
 		{
-			printf("attack out of range\n");
+			//printf("attack out of range\n");
 			return;
 		}
 
@@ -310,38 +310,81 @@ void Player::HandleCharacterAttack(int32 attackerType, int64 attackerId, int32 t
 	}
 }
 
-void Player::HandleAsyncFindPath()
+//void Player::HandleAsyncFindPath()
+//{
+//	_path.clear();
+//	_pathIndex = 0;
+//	for (const Pos& c : _requestPath)
+//	{
+//		_path.push_back({ GetField()->CoarseToWorld(c.y), GetField()->CoarseToWorld(c.x) });
+//	}
+//
+//	CPacket* pathPacket = CPacket::Alloc();
+//	MP_SC_FIND_PATH(pathPacket, playerInfo.PlayerID, Position, _path, _pathIndex);
+//	SendPacket_Around(pathPacket); // 본인포함해서 브로드캐스팅한번햊구ㅗ
+//	CPacket::Free(pathPacket);
+//
+//
+//	//이동 시작
+//
+//	//for(int i = 0 ; i < _path.size(); i++)
+//	//{
+//	//	printf("path[%d] : %d, %d\n", i, _path[i].x, _path[i].y);
+//	//}
+//
+//
+//	// bMove를 여기서바꿔야함
+//	// 필드나 섹터 변경될때 이동중이었으면 패스 보내는데
+//	// path를 셋팅한다음에 bMove를 변경해야 정상적인 path 보낼수있음
+//	if (_path.size() > 0)
+//	{
+//		SetDestination({ (double)_path[0].x, (double)_path[0].y, PLAYER_Z_VALUE });
+//	}
+//	_bRequestPath = false;
+//}
+
+void Player::ApplyPath(const std::vector<Pos>& src, const Pos& rawStart, const Pos& rawDest)
 {
 	_path.clear();
 	_pathIndex = 0;
-	for (const Pos& c : _requestPath)
+
+	for (const Pos& c : src)
 	{
 		_path.push_back({ GetField()->CoarseToWorld(c.y), GetField()->CoarseToWorld(c.x) });
 	}
+
+	if (_path.empty())
+	{
+		if (GetField()->LineClear(rawStart, rawDest)) {
+			_path.push_back(rawDest);   
+		}
+		else {
+			_bRequestPath = false;
+			return;                    
+		}
+	}
+	else {
+		_path.back() = rawDest;
+	}
+
 
 	CPacket* pathPacket = CPacket::Alloc();
 	MP_SC_FIND_PATH(pathPacket, playerInfo.PlayerID, Position, _path, _pathIndex);
 	SendPacket_Around(pathPacket); // 본인포함해서 브로드캐스팅한번햊구ㅗ
 	CPacket::Free(pathPacket);
 
-
-	//이동 시작
-
-	//for(int i = 0 ; i < _path.size(); i++)
-	//{
-	//	printf("path[%d] : %d, %d\n", i, _path[i].x, _path[i].y);
-	//}
-
-
-	// bMove를 여기서바꿔야함
-	// 필드나 섹터 변경될때 이동중이었으면 패스 보내는데
-	// path를 셋팅한다음에 bMove를 변경해야 정상적인 path 보낼수있음
 	if (_path.size() > 0)
 	{
 		SetDestination({ (double)_path[0].x, (double)_path[0].y, PLAYER_Z_VALUE });
 	}
 	_bRequestPath = false;
+
+	//printf("[APPLY] src=%d path=%d :", (int)src.size(), (int)_path.size());
+	//for (auto& p : _path) printf(" (%d,%d)", p.x, p.y);   // (X,Y)
+	//printf("\n");
 }
+
+
 
 
 

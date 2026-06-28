@@ -7,6 +7,7 @@
 #include <map>
 #include <functional>
 #include <atomic>
+#include <memory>
 
 
 #define TPS_ARR_NUM 5
@@ -18,17 +19,20 @@
 #define ASYNC_JOG_THRAED_NUM 2
 
 
+
 struct AsyncJob
 {
-	void* ptr;
+	int64 objectId;
 	std::function<void()> job;
 	uint16 jobType;
+	std::shared_ptr<void> outResult; //out
 };
 
 struct AsyncJobResult
 {
-	void* ptr;
+	int64 objectId;
 	uint16 jobType;
+	std::shared_ptr<void> result;
 };
 
 struct MoveThreadInfo
@@ -90,7 +94,7 @@ private:
 
 	virtual int64 GetPlayerSize() = 0;
 	virtual void HandleRecvPacket(int64 sessionId, CPacket* packet) = 0;
-	virtual void HandleAsyncJobFinish(void* ptr, uint16 jobType) = 0;
+	virtual void HandleAsyncJobFinish(int64 objectId, uint16 jobType, std::shared_ptr<void> result) = 0;
 
 	static unsigned __stdcall UpdateThreadStatic(void* param)
 	{
@@ -167,7 +171,7 @@ protected:
 	void ProcessEnter();
 	void ProcessLeave();
 	//TODO: lambda 넣을 수 있게
-	bool RequestAsyncJob(void* ptr, std::function<void()> job, uint16 queueIndex, uint16 jobType);
+	bool RequestAsyncJob(int64 objectId, std::function<void()> job, uint16 queueIndex, uint16 jobType, std::shared_ptr<void> outResult);
 	
 
 public:

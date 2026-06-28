@@ -175,10 +175,11 @@ Node* JumpPointSearch::CreateStartNode(Pos pos)
 
 void JumpPointSearch::SetMap(Pos& pos, uint8 value)
 {
-	//if (pos.y < 0 || pos.x < 0 || pos.y >= _mapYSize || pos.x >= _mapXSize)
-	//{
-	//	return;
-	//}
+	if (pos.y < 0 || pos.x < 0 || pos.y >= _mapYSize || pos.x >= _mapXSize)
+	{
+		__debugbreak();
+		return;
+	}
 
 	//if (_started)
 	//{
@@ -188,23 +189,23 @@ void JumpPointSearch::SetMap(Pos& pos, uint8 value)
 	//	}
 	//}
 
-	//if (value == BRESENHAM)
+	//if (value == bresenham)
 	//{
 	//	tile[pos.y][pos.x] = value;
 	//	return;
 	//}
 
-	//if (value != ROUTE)
+	//if (value != route)
 	//{
 	//	//경로가 아닌것을
 	//	// 오픈인곳을 close가아닌것으로 변경하려하면
-	//	if (GetMapValue(pos) == OPEN && value != CLOSE)
+	//	if (getmapvalue(pos) == open && value != close)
 	//	{
 	//		return;
 	//	}
 
 	//	// close인것을 변경하려하면
-	//	if (GetMapValue(pos) == CLOSE)
+	//	if (getmapvalue(pos) == close)
 	//	{
 	//		return;
 	//	}

@@ -129,7 +129,7 @@ unsigned int __stdcall GameThread::AsyncJobThread()
 				break;
 			}
 			asyncJob.job();
-			_asyncResultQueue.Enqueue({ asyncJob.ptr, asyncJob.jobType });
+			_asyncResultQueue.Enqueue({ asyncJob.objectId, asyncJob.jobType, asyncJob.outResult});
 			_jpsTps++;
 			/*std::pair<Session*, std::function<void()>> asyncJob;
 			bool dequeueSucceed = _asyncJobQueue[threadIndex].Dequeue(asyncJob);
@@ -224,9 +224,9 @@ void GameThread::NetworkRun()
 
 void GameThread::ProcessAsyncResults()
 {
-	AsyncJobResult result;
-	while (_asyncResultQueue.Dequeue(result))
-		HandleAsyncJobFinish(result.ptr, result.jobType);
+	AsyncJobResult res;
+	while (_asyncResultQueue.Dequeue(res))
+		HandleAsyncJobFinish(res.objectId, res.jobType, res.result);
 }
 
 
@@ -320,13 +320,12 @@ void GameThread::ProcessLeave()
 }
 
 //본인이 추가적으로 넣을 pointer랑 job이랑, queueIndex
-bool GameThread::RequestAsyncJob(void* ptr, std::function<void()> job, uint16 queueIndex, uint16 jobType)
-{
-	_asyncJobQueue[queueIndex].Enqueue({ptr, job, jobType});
+bool GameThread::RequestAsyncJob(int64 objectId, std::function<void()> job, uint16 queueIndex,
+	uint16 jobType, std::shared_ptr<void> outResult) {
+	_asyncJobQueue[queueIndex].Enqueue({ objectId, job, jobType, outResult });
 	SetEvent(_hAsyncJobThreadEvent[queueIndex]);
 	return true;
 }
-
 
 //bool GameThread::RequestAsyncJob(int64 sessionId, std::function<void()> job)
 //{

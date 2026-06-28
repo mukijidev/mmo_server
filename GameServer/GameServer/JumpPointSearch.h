@@ -4,9 +4,9 @@
 #include <vector>
 #include "Type.h"
 
-#define COARSE_CELL 100
-#define MAX_PATH_RANGE_CELLS 15
-#define MAX_NODES 1000
+#define COARSE_CELL 25
+#define MAX_PATH_RANGE_CELLS 200
+#define MAX_NODES 10000
 
 #define OMIT_RANGE  1
 
@@ -73,6 +73,7 @@ public:
 	//std::vector<Pos> FindPath(Pos start, Pos end);
 	void FindPath(Pos start, Pos end, std::vector<Pos>& path);
 	void FindFirstPath(Pos start, Pos end, Pos& firstPath);
+	bool CalculateBresenham(Pos start, Pos end);
 
 private:
 	Node* CreateStartNode(Pos pos);
@@ -93,7 +94,7 @@ private:
 	void CheckAndChangeParent(Node* newParent, Node* exist, int distance);
 	int GetH(Pos& pos, Pos& dest);
 	void FindShortestPath(std::vector<Pos>& path, std::vector<Pos>& reuslt);
-	bool CalculateBresenham(Pos start, Pos end);
+	bool LineOfSightFineWorld(int x1, int y1, int x2, int y2);
 	void ClearNode();
 
 private:
