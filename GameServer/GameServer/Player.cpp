@@ -359,6 +359,14 @@ void Player::ApplyPath(const std::vector<Pos>& src, const Pos& rawStart, const P
 			_path.push_back(rawDest);   
 		}
 		else {
+			/*
+			* 빈경로 보내기
+			* DUMMY JPS TPS가 계속 떨어지던거
+			*/
+			CPacket* p = CPacket::Alloc();
+			MP_SC_FIND_PATH(p, playerInfo.PlayerID, Position, _path, _pathIndex);
+			SendPacket_Around(p);   
+			CPacket::Free(p);
 			_bRequestPath = false;
 			return;                    
 		}
