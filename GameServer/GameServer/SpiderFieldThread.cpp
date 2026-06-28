@@ -25,10 +25,9 @@ void SpiderFieldThread::FrameUpdate(float deltaTime)
 	//TODO: 몬스터 갯수 확인하기
 		// 몬스터 없으면 Spawn 하고
 	int currentMonsterSize = _monsterMap.size();
-	if (currentMonsterSize < _maxMonsterNum)
+	for (int i = 0; i < 50 && (int)_monsterMap.size() < _maxMonsterNum; ++i)
 	{
 		SpawnMonster();
-		//printf("Spawn Monster\n");
 	}
 
 	for (auto it = _monsterMap.begin(); it != _monsterMap.end();)
