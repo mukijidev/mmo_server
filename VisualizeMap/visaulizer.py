@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-file_path = 'C:/Unreal/MMOGameServer/VisualizeMap/GuardianMap.dat'
+file_path = 'C:/Unreal/MMOGameServer/VisualizeMap/LobbyMap.dat'
 y_size = 12000
 x_size = 12000
 

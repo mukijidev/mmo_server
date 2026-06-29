@@ -290,6 +290,13 @@ void FieldPacketHandleThread::OnEnterThread(int64 sessionId, void* ptr)
 	int spawnX;
 	int spawnY;
 	GetSpawnXY(spawnX, spawnY);
+
+	if (p->playerInfo.PlayerID == 10001)
+	{
+		spawnX = 6000;   // 12000 / 2 = ¸Ê Áß¾Ó
+		spawnY = 6000;
+	}
+
 	CPacket* spawnCharacterPacket = CPacket::Alloc();
 
 	FVector spawnLocation{ spawnX, spawnY,  PLAYER_Z_VALUE };

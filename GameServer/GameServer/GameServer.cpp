@@ -136,7 +136,9 @@ void GameServer::LogServerInfo()
 	int networkRecv = _networkRecv;
 
 	int loginPlayerNum = _loginGameThread->GetPlayerSize();
-	int gamePlayerNum = _GuardianFieldThread->GetPlayerSize();
+	int guardianPlayerNum = _GuardianFieldThread->GetPlayerSize();
+	int lobbyPlayerNum = _LobbyFieldThread->GetPlayerSize();
+	int spiderPlayerNum = _SpiderFieldThread->GetPlayerSize();
 	int64 totalPlayerNum = _globalPlayerMap.size();
 	int loginTps = _loginGameThread->GetFps();
 	int fieldThreadTPS = _LobbyFieldThread->GetFps();
@@ -154,7 +156,9 @@ Send Message TPS : %lld\n\
 Recv Message TPS : %lld\n\
 session num :%lld\n\
 login : %d\n\
-game: %d\n\
+lobby : %d\n\
+guardian: %d\n\
+spider: %d\n\
 total: %lld\n\
 total disconnect : %lld\n\
 disconnect by sendqueue full : %lld\n\
@@ -167,7 +171,7 @@ fieldTps : %d\n\
 [GUARDIAN] jpsTps : %lld  queue : %lld\n\
 [SPIDER]   jpsTps : %lld  queue : %lld\n\
 ================\n\
-", totalAcceptValue, acceptTPSValue, sendMessageTPSValue, recvMessageTPSValue, sessionNum, loginPlayerNum, gamePlayerNum, totalPlayerNum,
+", totalAcceptValue, acceptTPSValue, sendMessageTPSValue, recvMessageTPSValue, sessionNum, loginPlayerNum, lobbyPlayerNum, guardianPlayerNum, spiderPlayerNum, totalPlayerNum,
 totalDisconnect, disconnectBySendQueueFull, processUserAllocMemory, networkSend, networkRecv, loginTps, fieldThreadTPS,
 lobbyJpsTps, lobbyJpsQueueSize, guardianJpsTps, guardianJpsQueueSize, spiderJpsTps, spiderJpsQueueSize);
 

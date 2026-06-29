@@ -4,6 +4,12 @@ A C++ MMORPG server built from scratch on Windows IOCP — custom network librar
 
 > Personal MMO project: **server (this)** · [client](https://github.com/mukijidev/mmo_client) · [load-test dummy](https://github.com/mukijidev/mmo_dummy)
 
+## Demo
+
+[![Demo video — load test & gameplay](https://img.youtube.com/vi/v0jvvZNFnSA/hqdefault.jpg)](https://www.youtube.com/watch?v=v0jvvZNFnSA)
+
+5,000 dummy  test
+
 ## Architecture
 
 Three independent servers, each with a concurrency model chosen for its workload:
