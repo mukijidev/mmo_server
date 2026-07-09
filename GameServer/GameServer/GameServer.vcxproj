@@ -133,7 +133,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_DISABLE_STRING_ANNOTATION;_DISABLE_VECTOR_ANNOTATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\lib\Type;$(SolutionDir)..\lib\Util;$(SolutionDir)..\lib\DataStructure;$(SolutionDir)..\lib\GameServerLib;$(SolutionDir)..\lib\Data;$(SolutionDir)mysql;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\lib\Type;$(SolutionDir)..\lib\Util;$(SolutionDir)..\lib\DataStructure;$(SolutionDir)..\lib\GameServerLib;$(SolutionDir)..\lib\Data;$(SolutionDir)mysql;$(SolutionDir)..\lib\Monitor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <Optimization>Disabled</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
@@ -199,6 +199,7 @@ xcopy /D /Y "$(ProjectDir)libssl-1_1-x64.dll" "$(OutDir)"
     <ClInclude Include="..\..\lib\GameServerLib\GameThread.h" />
     <ClInclude Include="..\..\lib\GameServerLib\PacketHeader.h" />
     <ClInclude Include="..\..\lib\GameServerLib\Session.h" />
+    <ClInclude Include="..\..\lib\Monitor\MonitorProtocol.h" />
     <ClInclude Include="..\..\lib\Type\Type.h" />
     <ClInclude Include="..\..\lib\Util\CpuUsage.h" />
     <ClInclude Include="..\..\lib\Util\Log.h" />

@@ -1,22 +1,23 @@
-#include "CNetServer.h"
+ï»¿#include "CLanServer.h"
 #include <stdio.h>
 #include "PacketHeader.h"
 #include "SerializeBuffer.h"
 #include "LockGuard.h"
 #include <process.h>
 #include "Log.h"
+#include "Profiler.h"
 
-CNetServer::CNetServer()
+CLanServer::CLanServer()
 {
-	//»ı¼ºÀÚ¿¡¼­ ¹¹ÇÒ±î?
+	//ìƒì„±ìì—ì„œ ë­í• ê¹Œ?
 }
 
-CNetServer::~CNetServer()
+CLanServer::~CLanServer()
 {
-	//¼Ò¸êÀÚ¿¡¼­ ¹¹ÇÒ±î?
+	//ì†Œë©¸ìì—ì„œ ë­í• ê¹Œ?
 }
 
-bool CNetServer::Start(uint16 port, uint32 concurrentThreadNum, uint32 workerThreadNum, int nagle, int sendZeroCopy)
+bool CLanServer::Start(uint16 port, uint32 concurrentThreadNum, uint32 workerThreadNum, int nagle, int sendZeroCopy)
 {
 	LOG(L"System", LogLevel::System, L"Init Network Library Start");
 	//wprintf(L"initnetwork start\n");
@@ -24,12 +25,17 @@ bool CNetServer::Start(uint16 port, uint32 concurrentThreadNum, uint32 workerThr
 	_nagle = nagle;
 	_sendZeroCopy = sendZeroCopy;
 
-	_hReleaseEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	// ¼¼¼Ç ¹è¿­ ÃÊ±âÈ­
-	InitSessionArr();
 	int errorCode;
+	// ì„¸ì…˜ ë°°ì—´ ì´ˆê¸°í™”
+	InitSessionArr();
+	hReleaseEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	if (hReleaseEvent == NULL)
+	{
+		errorCode = WSAGetLastError();
+		__debugbreak();
+	}
 
-	// ¼­¹ö iocp port
+	// ì„œë²„ iocp port
 	_iocpHandle = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, concurrentThreadNum);
 	if (_iocpHandle == NULL)
 	{
@@ -60,16 +66,7 @@ bool CNetServer::Start(uint16 port, uint32 concurrentThreadNum, uint32 workerThr
 	}
 	_threadList[_threadNumber++] = hMonitorThread;
 
-	//accept thread
-	HANDLE hAcceptThread;
-	hAcceptThread = (HANDLE)_beginthreadex(NULL, 0, AcceptThreadStatic, this, 0, NULL);
-	if (hAcceptThread == NULL)
-	{
-		errorCode = WSAGetLastError();
-		return false;
-	}
-	_threadList[_threadNumber++] = hAcceptThread;
-
+	//release thread
 	HANDLE hReleaseThread;
 	hReleaseThread = (HANDLE)_beginthreadex(NULL, 0, ReleaseThreadStatic, this, 0, NULL);
 	if (hReleaseThread == NULL)
@@ -80,36 +77,53 @@ bool CNetServer::Start(uint16 port, uint32 concurrentThreadNum, uint32 workerThr
 	_threadList[_threadNumber++] = hReleaseThread;
 
 
+	//accept thread
+	HANDLE hAcceptThread;
+	hAcceptThread = (HANDLE)_beginthreadex(NULL, 0, AcceptThreadStatic, this, 0, NULL);
+	if (hAcceptThread == NULL)
+	{
+		errorCode = WSAGetLastError();
+		return false;
+	}
+	_threadList[_threadNumber++] = hAcceptThread;
+
+
 	LOG(L"System", LogLevel::System, L"Init Network Library End");
 	return true;
 }
 
-void CNetServer::Stop()
+void CLanServer::Stop()
 {
 	LOG(L"System", LogLevel::System, L"Stop Network Library Start");
 	_bStopNetwork = true; // accept thread, monitor thread, release thread
+	SetEvent(hReleaseEvent);
 	closesocket(_listenSocket); // accept thread
 	PostQueuedCompletionStatus(_iocpHandle, 0, 0, nullptr); // worker thread
-	WaitForMultipleObjects(_threadNumber, _threadList, true, INFINITE); // thread ±â´Ş¸®°í
-	ClearSesssionArr(); // session ¹è¿­ Á¤¸®
-	CloseHandle(_iocpHandle); // iocp handle ´İ±â
+	WaitForMultipleObjects(_threadNumber, _threadList, true, INFINITE); // thread ê¸°ë‹¬ë¦¬ê³ 
+	ClearSesssionArr(); // session ë°°ì—´ ì •ë¦¬
+	CloseHandle(_iocpHandle); // iocp handle ë‹«ê¸°
 	LOG(L"System", LogLevel::System, L"Stop Network Library End");
 }
 
 
-void CNetServer::Disconnect(Session* session)
+void CLanServer::Disconnect(Session* session)
 {
 	session->_disconnectRequested = true;
 	CancelIoEx((HANDLE)session->_socket, (LPOVERLAPPED)&session->_recvOverlapped);
 	CancelIoEx((HANDLE)session->_socket, (LPOVERLAPPED)&session->_sendOverlapped);
 }
 
-void CNetServer::Disconnect(int64 sessionId)
+void CLanServer::Disconnect(int64 sessionId)
 {
+	// TODO: session ì°¾ì•„ì„œ
+	// interlocked incrementí•´ì„œ ë‚´ ì„¸ì…˜ìœ¼ë¡œ í•˜ê³ 
+	// send overlapp ëŠê³ 
+	// recv overlapp ëŠê³ 
+	// ë”ì´ìƒ sendë‘ recv ëª»í•˜ê²Œí•˜ê³ 
 	if (sessionId < 0)
 		return;
 
-	Session* session = GetSession(sessionId); 
+	Session* session = GetSession(sessionId);
 	if (session == nullptr)
 	{
 		return;
@@ -125,8 +139,62 @@ void CNetServer::Disconnect(int64 sessionId)
 
 
 
-//Enqueue¶û SendPost¶û ´ÙÇØ¾ßÇÏ³ª
-void CNetServer::SendPacket(int64 sessionId, CPacket* packet)
+void CLanServer::SendPackets(int64 sessionId, std::vector<CPacket*>& packets)
+{
+	PRO_BEGIN(L"SendPackets");
+	if (sessionId < 0)
+	{
+		PRO_END(L"SendPackets");
+		return;
+	}
+
+
+	Session* session = GetSession(sessionId);
+	if (session == nullptr)
+	{
+		PRO_END(L"SendPackets");
+
+		return;
+	}
+
+	// ì»¨í…ì¸ ë¡œë¶€í„° disconnect ìš”ì²­ ë°›ì€ê±°ì˜€ìœ¼ë©´
+	if (session->_disconnectRequested)
+	{
+		// ë‹¤ì‹œ ì§‘ì–´ë„£ê³  return
+		// disconnectìš”ì²­ì´ ì´í›„ì— ì™”ì„ìˆ˜ë„ ìˆìŒ  ì¼ë‹¨ ì—¬ê¸°ì„œ í•œë²ˆ ê±°ë¥´ê³ 
+		PutBackSession(session);
+		PRO_END(L"SendPackets");
+		return;
+	}
+
+
+	// íŒ¨í‚·ì„ ì—¬ëŸ¬ ì„¸ì…˜ì— ë³´ë‚´ê¸° ìœ„í•´ ì‚¬ìš©ë˜ëŠ” packet refcount
+	//int dataSize = sizeof(packet);
+	int packetSize = packets.size();
+	for (int i = 0; i < packetSize; i++)
+	{
+		CPacket*& packet = packets[i];
+
+		packet->IncRefCount();
+		packet->Encode(_packetKey);
+		PRO_BEGIN(L"SendPacketEnqueue");
+		session->_sendQueue.Enqueue(packet);
+		PRO_END(L"SendPacketEnqueue");
+	}
+
+	InterlockedAdd64(&_processSendPacket, packetSize); // ë¡œê·¸ìš©
+
+	SendPost(session);
+	PutBackSession(session);
+
+
+	//PutBackSession(session);
+	PRO_END(L"SendPackets");
+	return;
+}
+
+//Enqueueë‘ SendPostë‘ ë‹¤í•´ì•¼í•˜ë‚˜
+void CLanServer::SendPacket(int64 sessionId, CPacket* packet)
 {
 	if (sessionId < 0)
 		return;
@@ -138,21 +206,21 @@ void CNetServer::SendPacket(int64 sessionId, CPacket* packet)
 		return;
 	}
 
-	// ÄÁÅÙÃ÷·ÎºÎÅÍ disconnect ¿äÃ» ¹ŞÀº°Å¿´À¸¸é
+	// ì»¨í…ì¸ ë¡œë¶€í„° disconnect ìš”ì²­ ë°›ì€ê±°ì˜€ìœ¼ë©´
 	if (session->_disconnectRequested)
 	{
-		// ´Ù½Ã Áı¾î³Ö°í return
-		// disconnect¿äÃ»ÀÌ ÀÌÈÄ¿¡ ¿ÔÀ»¼öµµ ÀÖÀ½  ÀÏ´Ü ¿©±â¼­ ÇÑ¹ø °Å¸£°í
+		// ë‹¤ì‹œ ì§‘ì–´ë„£ê³  return
+		// disconnectìš”ì²­ì´ ì´í›„ì— ì™”ì„ìˆ˜ë„ ìˆìŒ  ì¼ë‹¨ ì—¬ê¸°ì„œ í•œë²ˆ ê±°ë¥´ê³ 
 		PutBackSession(session);
 		return;
 	}
 
-	InterlockedIncrement64(&_processSendPacket); // ·Î±×¿ë
+	InterlockedIncrement64(&_processSendPacket); // ë¡œê·¸ìš©
 
-	// ÆĞÅ¶À» ¿©·¯ ¼¼¼Ç¿¡ º¸³»±â À§ÇØ »ç¿ëµÇ´Â packet refcount
+	// íŒ¨í‚·ì„ ì—¬ëŸ¬ ì„¸ì…˜ì— ë³´ë‚´ê¸° ìœ„í•´ ì‚¬ìš©ë˜ëŠ” packet refcount
 	packet->IncRefCount();
 
-	//ÀÎÄÚµù ÇÏ°í Å¥¿¡ ³Ö°í
+	//ì¸ì½”ë”© í•˜ê³  íì— ë„£ê³ 
 	packet->Encode(_packetKey);
 	session->_sendQueue.Enqueue(packet);
 
@@ -161,7 +229,8 @@ void CNetServer::SendPacket(int64 sessionId, CPacket* packet)
 	return;
 }
 
-unsigned __stdcall CNetServer::WorkerThread()
+
+unsigned __stdcall CLanServer::WorkerThread()
 {
 	int retVal;
 
@@ -177,7 +246,7 @@ unsigned __stdcall CNetServer::WorkerThread()
 		retVal = GetQueuedCompletionStatus(_iocpHandle, &cbTransferred,
 			(PULONG_PTR)&s, &overlapped, INFINITE);
 
-	
+
 		if (s == nullptr)
 		{
 			if (retVal == 0)
@@ -186,7 +255,7 @@ unsigned __stdcall CNetServer::WorkerThread()
 				LOG(L"WorkerThread", LogLevel::Error, L"GQCS ret 0");
 			}
 
-			// ´Ù¸¥ ¿öÄ¿¾²·¹µåÇÑÅ× ÀüÆÄ
+			// ë‹¤ë¥¸ ì›Œì»¤ì“°ë ˆë“œí•œí…Œ ì „íŒŒ
 			PostQueuedCompletionStatus(_iocpHandle, 0, 0, 0);
 			break;
 		}
@@ -209,7 +278,7 @@ unsigned __stdcall CNetServer::WorkerThread()
 			int32 networkSend = (int32)cbTransferred + (((int32)cbTransferred) / 1460 + 1) * 40;
 			InterlockedAdd(&_networkSend, networkSend);
 			{
-				// sessionÀÌ wsasendÇÑ Å¥
+				// sessionì´ wsasendí•œ í
 				s->ClearSendedQueue();
 				InterlockedExchange8((CHAR*)(&s->_isSending), false);
 				SendPost(s);
@@ -221,24 +290,24 @@ unsigned __stdcall CNetServer::WorkerThread()
 		{
 			int32 networkRecv = (int32)cbTransferred + (((int32)cbTransferred) / 1460 + 1) * 40;
 			InterlockedAdd(&_networkRecv, networkRecv);
-			
+
 			int moveRecvRearVal = s->_recvQueue.MoveRear(cbTransferred);
 			if (moveRecvRearVal != cbTransferred)
 			{
-				// ringbuffer¿¡·¯
+				// ringbufferì—ëŸ¬
 				__debugbreak();
 			}
 
-
+			bool bEnqueued = false;
 			while (true)
 			{
-				// ÆĞÅ¶ Çì´õ ¸¸Å­ ¸ø»©¿À´Â °æ¿ì
+				// íŒ¨í‚· í—¤ë” ë§Œí¼ ëª»ë¹¼ì˜¤ëŠ” ê²½ìš°
 				if (s->_recvQueue.GetUseSize() < sizeof(NetHeader))
 				{
 					break;
 				}
 
-				// Çì´õ¸¸Å­ ÀÏ´Ü PeekÇØ¿À´Âµ¥
+				// í—¤ë”ë§Œí¼ ì¼ë‹¨ Peekí•´ì˜¤ëŠ”ë°
 				NetHeader header;
 				int peekVal = s->_recvQueue.Peek((char*)&header, sizeof(NetHeader));
 				if (peekVal != sizeof(NetHeader))
@@ -253,43 +322,51 @@ unsigned __stdcall CNetServer::WorkerThread()
 					break;
 				}
 
-				// len¸¸Å­ ¸ø»©¿À´Â °æ¿ì
+				// lenë§Œí¼ ëª»ë¹¼ì˜¤ëŠ” ê²½ìš°
 				int dataSize = header._len;
 				if (s->_recvQueue.GetUseSize() < sizeof(NetHeader) + dataSize)
 				{
 					break;
 				}
 
-				// header peekÇÑ°Í ÀĞÀº°ÍÀ¸·Î Ã³¸®ÇÏ°í
+				// header peekí•œê²ƒ ì½ì€ê²ƒìœ¼ë¡œ ì²˜ë¦¬í•˜ê³ 
 				int moveHeaderVal = s->_recvQueue.MoveFront(sizeof(NetHeader));
 				if (moveHeaderVal != sizeof(NetHeader))
 				{
 					__debugbreak();
 				}
 
-				// packetÀ» ¸¸µé¾î¼­
+				// packetì„ ë§Œë“¤ì–´ì„œ
 				CPacket* packet = CPacket::Alloc();
 				char* buf = packet->GetBufferPtr();
-				// datasize¸¸Å­ ±Ü¾î¿À°í
+				// datasizeë§Œí¼ ê¸ì–´ì˜¤ê³ 
 				s->_recvQueue.Dequeue(buf, dataSize);
 				packet->MoveWritePos(dataSize);
-				//µğÄÚµù  ( checksum ½ÇÆĞ )
+				//ë””ì½”ë”©  ( checksum ì‹¤íŒ¨ )
 				bool bDecodeSucceed = packet->Decode(&header, _packetKey);
 				if (!bDecodeSucceed)
 				{
-					//checksum ½ÇÆĞÇßÀ»½Ã
-					//dec io count¸¦ ÇÏ°í ´Ù½Ã recvpost¸¦ ¾ÈÇÔÀ¸·Î½á ¼¼¼ÇÀ» Á¾·áÇÑ´Ù
+					//checksum ì‹¤íŒ¨í–ˆì„ì‹œ
+					//dec io countë¥¼ í•˜ê³  ë‹¤ì‹œ recvpostë¥¼ ì•ˆí•¨ìœ¼ë¡œì¨ ì„¸ì…˜ì„ ì¢…ë£Œí•œë‹¤
 					Disconnect(s);
 					break;
 				}
-				// ÆĞÅ¶ ÄÁÅÙÃ÷·Î ³Ñ±â°í
-				OnRecvPacket(s->_sessionId, packet);
+				// íŒ¨í‚· ì»¨í…ì¸ ë¡œ ë„˜ê¸°ê³ 
+				s->_packetQueue.Enqueue(packet);
+				bEnqueued = true;
 				InterlockedIncrement64(&_processRecvPacket);
 			}
+
+			//if (bEnqueued)
+			//{
+			//	s->_gameThread->SetUpdateEvent();
+			//}
+
+
 			if (!s->_disconnectRequested)
 			{
-				//checksum ½ÇÆĞÇßÀ»½Ã
-				//dec io count¸¦ ÇÏ°í ´Ù½Ã recvpost¸¦ ¾ÈÇÔÀ¸·Î½á ¼¼¼ÇÀ» Á¾·áÇÑ´Ù
+				//checksum ì‹¤íŒ¨í–ˆì„ì‹œ
+				//dec io countë¥¼ í•˜ê³  ë‹¤ì‹œ recvpostë¥¼ ì•ˆí•¨ìœ¼ë¡œì¨ ì„¸ì…˜ì„ ì¢…ë£Œí•œë‹¤
 				RecvPost(s);
 			}
 		}
@@ -297,8 +374,8 @@ unsigned __stdcall CNetServer::WorkerThread()
 			__debugbreak();
 		}
 
-		// ¿Ï·áÅëÁö½Ã iocount¸¦ 1 °¨¼Ò
-		// ´Ù½Ã recv Post, ¾î´À ¼ø°£ÀÌµç sessionÀÌ ²÷±â±â Àü±îÁö´Â recv post·Î iocount¸¦ 1ÀÌ»ó À¯ÁöÇÑ´Ù
+		// ì™„ë£Œí†µì§€ì‹œ iocountë¥¼ 1 ê°ì†Œ
+		// ë‹¤ì‹œ recv Post, ì–´ëŠ ìˆœê°„ì´ë“  sessionì´ ëŠê¸°ê¸° ì „ê¹Œì§€ëŠ” recv postë¡œ iocountë¥¼ 1ì´ìƒ ìœ ì§€í•œë‹¤
 		DecIoCount(s);
 	}
 
@@ -306,17 +383,17 @@ unsigned __stdcall CNetServer::WorkerThread()
 }
 
 
-unsigned __stdcall CNetServer::AcceptThread()
+unsigned __stdcall CLanServer::AcceptThread()
 {
 	LOG(L"System", LogLevel::System, L"Accept Thread Start");
-	// ¼­¹ö ip port
+	// ì„œë²„ ip port
 	SOCKADDR_IN serverAddr;
 	memset(&serverAddr, 0, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serverAddr.sin_port = htons(_serverPort);
 
-	// ¸®½¼ ¼ÒÄÏ ¸¸µé°í
+	// ë¦¬ìŠ¨ ì†Œì¼“ ë§Œë“¤ê³ 
 	_listenSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (_listenSocket == INVALID_SOCKET)
 	{
@@ -324,7 +401,7 @@ unsigned __stdcall CNetServer::AcceptThread()
 		return 0;
 	}
 
-	// linger fin º¸³»±â
+	// linger fin ë³´ë‚´ê¸°
 	LINGER optval;
 	optval.l_onoff = 1;
 	optval.l_linger = 0;
@@ -336,10 +413,10 @@ unsigned __stdcall CNetServer::AcceptThread()
 		return false;
 	}
 
-	// zero copy ¿É¼Ç Ãß°¡ÇßÀ¸¸é
+	// zero copy ì˜µì…˜ ì¶”ê°€í–ˆìœ¼ë©´
 	if (_sendZeroCopy == 1)
 	{
-		int sendZeroCopy = 0; // ¼Û½Å ¹öÆÛ Å©±â¸¦ 0À¸·Î ¼³Á¤
+		int sendZeroCopy = 0; // ì†¡ì‹  ë²„í¼ í¬ê¸°ë¥¼ 0ìœ¼ë¡œ ì„¤ì •
 		int retVal = setsockopt(_listenSocket, SOL_SOCKET, SO_SNDBUF, (char*)&sendZeroCopy, sizeof(sendZeroCopy));
 		if (retVal == SOCKET_ERROR)
 		{
@@ -348,9 +425,9 @@ unsigned __stdcall CNetServer::AcceptThread()
 			__debugbreak();
 		}
 	}
-	
 
-	// bindÇÏ°í
+
+	// bindí•˜ê³ 
 	int bindRetVal;
 	bindRetVal = bind(_listenSocket, (SOCKADDR*)&serverAddr, sizeof(serverAddr));
 	if (bindRetVal == SOCKET_ERROR)
@@ -369,11 +446,11 @@ unsigned __stdcall CNetServer::AcceptThread()
 		return false;
 	}
 
-	
+
 	while (!_bStopNetwork)
 	{
 		int addrLen;
-		 //clientSocket;
+		//clientSocket;
 
 		SOCKADDR_IN clientAddr;
 
@@ -384,7 +461,7 @@ unsigned __stdcall CNetServer::AcceptThread()
 		{
 			int error = WSAGetLastError();
 			/*
-			*  listen socket ´İÀ¸¸é »ı±â´Â¿¡·¯ 10004
+			*  listen socket ë‹«ìœ¼ë©´ ìƒê¸°ëŠ”ì—ëŸ¬ 10004
 
 				WSAEINTR
 				10004
@@ -415,12 +492,13 @@ unsigned __stdcall CNetServer::AcceptThread()
 
 
 
-unsigned __stdcall CNetServer::MonitorThread()
+unsigned __stdcall CLanServer::MonitorThread()
 {
 	int tpsIndex = 0;
 	while (!_bStopNetwork)
 	{
 		Sleep(1000);
+
 		_monitoredSendTPS[tpsIndex % TPS_ARR_NUM] = _processSendPacket;
 		_processSendPacket = 0;
 
@@ -436,37 +514,80 @@ unsigned __stdcall CNetServer::MonitorThread()
 		_monitoredNetworkByteRecvTPS[tpsIndex % TPS_ARR_NUM] = _networkRecv;
 		_networkRecv = 0;
 
+
+
 		tpsIndex++;
 	}
 	return 0;
 }
 
-unsigned __stdcall CNetServer::ReleaseThread()
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///							Release Thread 													     //
+///																								 //
+///  ë§Œë“  ì´ìœ :																					 //
+///  Contentsì—ì„œ contentsì—ì„œ í•„ìš”í•œ lockì„ ì¡ê³  sendpacketì„ í•˜ëŠ”ë° sessionì´ disconenctë˜ì„œ		 //
+///  ë°”ë¡œ on disconnectê¹Œì§€ íƒ€ë²„ë¦¬ë©´ ê°™ì€ ì“°ë ˆë“œì—ì„œ on disconnectê°€ ì²˜ë¦¬ë˜ëŠ”ë°						 //
+///	 on disconnectì—ì„œ ê°™ì€ lockì„ ë˜ ì¡ì•„ë²„ë¦¬ë©´ dead lock ë°œìƒ									 //
+///																								 //
+///  ì‘ì€ contentsë§Œ êµ¬í˜„í•˜ë©´ ì–´ë–»ê²Œë“  contentsì—ì„œ ì²˜ë¦¬ê°€ ê°€ëŠ¥ í•˜ê² ì§€ë§Œ						     //
+///  ì´ê²ƒì€ library ì½”ë“œ êµ¬ì¡°ë¥¼ ì•Œì•„ì•¼ ê°€ëŠ¥í•œê±°ê³ 												 	 //
+///  ì• ì´ˆì— library ì½”ë“œë¥¼ ì‹ ê²½ì•ˆì“°ê³  ì»¨í…ì¸ ê°€ êµ¬í˜„ë˜ì•¼í•˜ëŠ”ê²Œ ë§ëŠ”ê²ƒì´ë‹ˆ								 //
+///																								 //
+///  OnDisconnectí˜¸ì¶œë  ê²½ìš°ì—, release threadì— enqueueí•˜ê³  returní•˜ê³  contentsì—ì„œëŠ”				 //
+///  RelesaeThreadê°€ OnDisconnectë¥¼ ë¹„ë™ê¸°ë¡œ í˜¸ì¶œí•œë‹¤										         //
+/// ///////////////////////////////////////////////////////////////////////////////////////////////
+unsigned __stdcall CLanServer::ReleaseThread()
 {
+	int error;
 	while (!_bStopNetwork)
 	{
-		WaitForSingleObject(_hReleaseEvent, INFINITE);
+		DWORD result = WaitForSingleObject(hReleaseEvent, INFINITE);
+		if (result == WAIT_FAILED)
+		{
+			error = WSAGetLastError();
+			__debugbreak();
+		}
+
 		{
 			while (true)
 			{
 				Session* session = nullptr;
-				bool dequeueSucceed = _releaseQueue.Dequeue(session);
+				bool dequeueSucceed = _releaseSessionQueue.Dequeue(session);
 				if (!dequeueSucceed)
 				{
 					break;
 				}
-				OnDisconnect(session->_sessionId);
+
+				if (session->_gameThread == nullptr)
+				{
+					//ì—†ëŠ”ê±° ë§ì´ì•ˆë¨
+					__debugbreak();
+				}
+
+				CPacket* packet;
+				while (true)
+				{
+					bool bDequeueSucceed = session->_packetQueue.Dequeue(packet);
+					if (!bDequeueSucceed)
+					{
+						break;
+					}
+					CPacket::Free(packet);
+				}
+
+				session->_gameThread->LeaveSession(session->_sessionId, true);
+				//OnDisconnect(session->_sessionId);
 				ReleaseSession(session);
+
+				printf("release session\n");
 			}
 		}
 	}
 	return 0;
 }
 
-
-
-
-bool CNetServer::SendPost(Session* session)
+bool CLanServer::SendPost(Session* session)
 {
 	IncIoCount(session);
 	int useSize = session->_sendQueue.Size();
@@ -494,17 +615,15 @@ bool CNetServer::SendPost(Session* session)
 }
 
 
-//¼ö½Å ¿äÃ»
-bool CNetServer::RecvPost(Session* session)
+//ìˆ˜ì‹  ìš”ì²­
+bool CLanServer::RecvPost(Session* session)
 {
 	IncIoCount(session);
-	SessionLog sessionLog = { LogCode::RecvPost, (uint32)__LINE__ };
 
-	LOG_SESSION(session, sessionLog);
 	//WriteLock writeLock(&session->_sessionLock);
 	int directEnqueueSize = session->_recvQueue.GetDirectEnqueueSize();
-	// ¼ö½Å¹öÆÛ°¡ ²ËÂ÷´Â°Ç ¹®Á¦, ¹ŞÀ¸¸é ¹Ù·Î Ã³¸®ÇØ¾ßÇÏ´Ï±î
-	// ±Ùµ¥ ¼­¹ö ´À¸®¸é ºñµ¿±â i/o¿¡¼­´Â ²ËÂû ¼ö µµ ÀÖ´Â°Ç°¡
+	// ìˆ˜ì‹ ë²„í¼ê°€ ê½‰ì°¨ëŠ”ê±´ ë¬¸ì œ, ë°›ìœ¼ë©´ ë°”ë¡œ ì²˜ë¦¬í•´ì•¼í•˜ë‹ˆê¹Œ
+	// ê·¼ë° ì„œë²„ ëŠë¦¬ë©´ ë¹„ë™ê¸° i/oì—ì„œëŠ” ê½‰ì°° ìˆ˜ ë„ ìˆëŠ”ê±´ê°€
 
 	if (directEnqueueSize == 0)
 	{
@@ -517,8 +636,8 @@ bool CNetServer::RecvPost(Session* session)
 
 	// bufferptr
 	// [] [] [front ptr] [] [] [] [] [rearptr] [] [] [] [] []
-	// rearptrºÎÅÍ µÚ¿¡±îÁö
-	// ¾Õ¿¡ºÎÅÍ frontptr±îÁö
+	// rearptrë¶€í„° ë’¤ì—ê¹Œì§€
+	// ì•ì—ë¶€í„° frontptrê¹Œì§€
 
 	WSABUF wsabufArr[2];
 	//WSABUF wsabufRear;
@@ -543,7 +662,7 @@ bool CNetServer::RecvPost(Session* session)
 	// recv overlapp
 	memset(&(session->_recvOverlapped), 0, sizeof(session->_recvOverlapped));
 
-	//ºñµ¿±â·Î ¿äÃ» ÇßÀ¸¸é
+	//ë¹„ë™ê¸°ë¡œ ìš”ì²­ í–ˆìœ¼ë©´
 	if (session->_disconnectRequested)
 	{
 		DecIoCount(session);
@@ -557,22 +676,22 @@ bool CNetServer::RecvPost(Session* session)
 		if (recvError != ERROR_IO_PENDING)
 		{
 			//CancelIoEx((HANDLE)session->_socket, (LPOVERLAPPED)&session->_sendOverlapped);
-			//TODO: ·Î±×Âï±â
+			//TODO: ë¡œê·¸ì°ê¸°
 			if (recvError != WSAECONNRESET && recvError != WSAECONNABORTED)
 			{
 				LOG(L"Disconnect", LogLevel::Error, L"WSA Recv error : %d, errorCode :%d", session->_sessionId, recvError);
 			}
-		/*	if (recvError == WSAECONNRESET)
-			{
-				InterlockedIncrement64(&_recvConnResetTotal);
-				LOG(L"Disconnect", LogLevel::Debug, L"Recv WSAECONNRESET : %d", session->_sessionId);
-			}*/
+			/*	if (recvError == WSAECONNRESET)
+				{
+					InterlockedIncrement64(&_recvConnResetTotal);
+					LOG(L"Disconnect", LogLevel::Debug, L"Recv WSAECONNRESET : %d", session->_sessionId);
+				}*/
 
 			DecIoCount(session);
 			return false;
 		}
 		else {
-			//ºñµ¿±â·Î ¿äÃ» ÇßÀ¸¸é
+			//ë¹„ë™ê¸°ë¡œ ìš”ì²­ í–ˆìœ¼ë©´
 			if (session->_disconnectRequested)
 			{
 				CancelIoEx((HANDLE)session->_socket, (LPOVERLAPPED)&session->_recvOverlapped);
@@ -580,14 +699,14 @@ bool CNetServer::RecvPost(Session* session)
 				return false;
 			}
 		}
-		// ERROR IO PENDINGÀÌ¸é Á¤»ó
+		// ERROR IO PENDINGì´ë©´ ì •ìƒ
 	}
 	return true;
 }
 
-bool CNetServer::AcceptProcess(SOCKET socket, SOCKADDR_IN* clientAddr)
+bool CLanServer::AcceptProcess(SOCKET socket, SOCKADDR_IN* clientAddr)
 {
-	// ¼¼¼Ç »ı¼ºÇÏ°í
+	// ì„¸ì…˜ ìƒì„±í•˜ê³ 
 	Session* session = CreateSession(socket, clientAddr);
 	if (session == nullptr)
 	{
@@ -598,27 +717,29 @@ bool CNetServer::AcceptProcess(SOCKET socket, SOCKADDR_IN* clientAddr)
 		__debugbreak();
 	}*/
 
-	// iocp¿¡ µî·ÏÇÏ°í
+	// iocpì— ë“±ë¡í•˜ê³ 
 	HANDLE iocpHandle = CreateIoCompletionPort((HANDLE)socket, _iocpHandle, (ULONG_PTR)session, 0);
 	if (iocpHandle == NULL)
 	{
-		//error code 6 ÀÌ¹Ì ¿¬°á²÷±ä ¼ÒÄÏ µî·ÏÇÏ·Á´Â °Í
+		//error code 6 ì´ë¯¸ ì—°ê²°ëŠê¸´ ì†Œì¼“ ë“±ë¡í•˜ë ¤ëŠ” ê²ƒ
 		int errorCode = WSAGetLastError();
 
 		LOG(L"Accept", LogLevel::Error, L"connect process create io completion port failed : %d\n", errorCode);
 		return false;
 	}
 
-	// ÄÁÅÙÃ÷ accept Ã³¸®
-	OnAccept(session->_sessionId);
+	// ì»¨í…ì¸  accept ì²˜ë¦¬
+	//OnAccept(session->_sessionId);
+	session->_gameThread = _defaultGameThread;
+	_defaultGameThread->EnterSession(session->_sessionId, nullptr);
 
-	SessionLog sessionLog = { LogCode::Accpet, (uint32)__LINE__ };
-	LOG_SESSION(session, sessionLog);
-	
-	//recv post °É°í
+	//SessionLog sessionLog = { LogCode::Accpet, (uint32)__LINE__ };
+	//LOG_SESSION(session, sessionLog);
+	//
+	//recv post ê±¸ê³ 
 	RecvPost(session);
 
-	// iocount 1 °¨¼Ò½ÃÅ´ , sessionÀº ½ÃÀÛµÆÀ»ˆÛ iocount 1ÀÌ±â ‹š¹®¿¡ recvpost°Ç ¼ø°£ 2ÀÌ°í, ¿©±â¼­ °¨¼Ò½ÃÄÑ¾ß 1ÀÓ
+	// iocount 1 ê°ì†Œì‹œí‚´ , sessionì€ ì‹œì‘ëì„ëŒ¸ iocount 1ì´ê¸° ë–„ë¬¸ì— recvpostê±´ ìˆœê°„ 2ì´ê³ , ì—¬ê¸°ì„œ ê°ì†Œì‹œì¼œì•¼ 1ì„
 	bool bDisconnected = DecIoCount(session);
 	if (bDisconnected)
 	{
@@ -629,21 +750,21 @@ bool CNetServer::AcceptProcess(SOCKET socket, SOCKADDR_IN* clientAddr)
 }
 
 
-Session* CNetServer::CreateSession(SOCKET socket, SOCKADDR_IN* clientAddr)
+Session* CLanServer::CreateSession(SOCKET socket, SOCKADDR_IN* clientAddr)
 {
-	// 1¾¿ Áõ°¡ÇÏ´Â sessionid
+	// 1ì”© ì¦ê°€í•˜ëŠ” sessionid
 	static int64 GenerateSessionId = 0;
 	int64 id = ++GenerateSessionId;
 	uint16 sessionIndex = 0;
 
-	//ºó index Ã£¾Æ¼­
+	//ë¹ˆ index ì°¾ì•„ì„œ
 	bool bPopSucceed = _emptySessionIndex.Pop(sessionIndex);
 	if (!bPopSucceed)
 	{
-		// TODO: ¾øÀ¸¸é ¿¬°á¾È¹Ş°Å³ª
-		// ´Ã¸®°Å³ª
-		// Áö±İÀº Disconnect¸¦ ¾öÃ»ÇØ¼­ ¼­¹ö¿¡¼­
-		// ¼º´É ¾ÈÁÁÀ» ‹š ½ÇÆĞÇÒ¼öµµÀÖÀ½
+		// TODO: ì—†ìœ¼ë©´ ì—°ê²°ì•ˆë°›ê±°ë‚˜
+		// ëŠ˜ë¦¬ê±°ë‚˜
+		// ì§€ê¸ˆì€ Disconnectë¥¼ ì—„ì²­í•´ì„œ ì„œë²„ì—ì„œ
+		// ì„±ëŠ¥ ì•ˆì¢‹ì„ ë–„ ì‹¤íŒ¨í• ìˆ˜ë„ìˆìŒ
 
 		//__debugbreak();
 		LOG(L"Accept", LogLevel::Error, L"!bPopSucceed from empty session index");
@@ -652,10 +773,10 @@ Session* CNetServer::CreateSession(SOCKET socket, SOCKADDR_IN* clientAddr)
 	else {
 		InterlockedIncrement64(&_sessionNum);
 	}
-	 
-	//¼¼¼Ç id 8 byteÁß ¾Õ¿¡ 2byte sessionInde·Î ½º°í
+
+	//ì„¸ì…˜ id 8 byteì¤‘ ì•ì— 2byte sessionIndeë¡œ ìŠ¤ê³ 
 	uint16* ptr = (uint16*)&id;
-	ptr += 3; 
+	ptr += 3;
 	*ptr = sessionIndex;
 
 
@@ -669,8 +790,8 @@ Session* CNetServer::CreateSession(SOCKET socket, SOCKADDR_IN* clientAddr)
 }
 
 
-// close socketÀ» 1È¸ÇÏ±â À§ÇØ¼­
-bool CNetServer::ReleaseSession(Session* session)
+// close socketì„ 1íšŒí•˜ê¸° ìœ„í•´ì„œ
+bool CLanServer::ReleaseSession(Session* session)
 {
 	uint64 sessionId = session->_sessionId;
 	uint16 sessionIndex = GetSessionIndex(sessionId);
@@ -680,27 +801,17 @@ bool CNetServer::ReleaseSession(Session* session)
 	{
 		//WriteLock sessionLock(&session->_sessionLock);
 		closeSocketError = closesocket(session->_socket);
+		session->_socket = INVALID_SOCKET;
 		if (closeSocketError != 0)
 		{
 			closeSocketErrorCode = WSAGetLastError();
 			__debugbreak();
 		}
 	}
-	for (;;)
-	{
-		CPacket* packet;
-		bool bDequeueSuceed = session->_sendQueue.Dequeue(packet);
-		if (!bDequeueSuceed)
-			break;
-		CPacket::Free(packet);
-	}
 
-	if (session->_sendQueue.Size() != 0)
-	{
-		__debugbreak();
-	}
+
+	session->ClearSendQueue();
 	session->ClearSendedQueue();
-
 
 	_emptySessionIndex.Push(sessionIndex);
 	InterlockedDecrement64(&_sessionNum);
@@ -708,40 +819,54 @@ bool CNetServer::ReleaseSession(Session* session)
 	return true;
 }
 
-/*
-Release½Ã¿¡ ioFlag 1ÀÎ»óÅÂ·Î
-// 1Áõ°¡½ÃÅ°°í ³Ö´Â ÀÌÀ¯:
-	// sessionÀÇ iocount´Â ½ÃÀÛÇÒ‹š 1·Î À¯ÁöÇÑ´Ù
-	// ¸¸¾à io count°¡ 0ÀÌ¶ó¸é session ÀçÈ°¿ë °úÁ¤¿¡¼­
-	// ¼¼¼Ç id º¯°æ Àü¿¡
-	//  contents¿¡¼­ ¾ÆÁ÷ ÇØ´ç ¼¼¼Ç id·Î µé°íÀÖ°í sendpacketÀ» ½ÃµµÇÏ¸é
-	// ²÷±ä ¼¼¼ÇÀ¸·Î sendpacket¿¡¼­ iocount Áõ°¡½ÃÅ°°í °¨¼Ò½ÃÅ°¸é 0ÀÌµÇ´Âµ¥
-	// 0ÀÌµÇ¸é ¹Ù·Î ¼¼¼Ç ²÷¾î¹ö¸®±â ‹š¹®¿¡
-	// ±âº»ÀÌ 1·Î½ÃÀÛÇÏ°í accept¿¡¼­ recvpost¿Ï·áÈÄ 1°¨¼Ò½ÃÅ²´Ù (recvpost¿¡¼­ 2·Î ¸¸µé¾î³ù±â¶§¹®¿¡)
-*/
-bool CNetServer::TryReleaseSession(Session* session, int line)
+inline bool CLanServer::TryReleaseSession(Session* session)
 {
-	// ¸ñÇ¥, º¯°æÇÒ°ª, ¿¹»ó°ª
-	// ¿¹»ó°ª ioFlag = 0, ioCount = 0;
-	// º¯°æÇÒ°ª ioFlag = 1, ioCount = 1;
 	int64 exchangeValue = 0x0000'0001'0000'0001;
+
 	if (InterlockedCompareExchange64((int64*)(&session->_ioFlag), exchangeValue, 0) != 0)
 	{
-		//ioFlag°¡ 0ÀÌ ¾Æ´Ï¾úÀ¸¸é
-		// ¾ÆÁ÷ »ç¿ëÁßÀÎ ¼¼¼ÇÀÓ: relase ´ÙÀ½¿¡
 		return false;
 	}
-	LOG(L"Disconnect", LogLevel::Debug, L"ReleaseSession session Id: sessiond Id :%d, line :  %d", session->_sessionId, line);
 
-
-	// release thread¿¡ enqueueÇÑ´Ù
-	_releaseQueue.Enqueue(session);
-	SetEvent(_hReleaseEvent);
+	_releaseSessionQueue.Enqueue(session);
+	SetEvent(hReleaseEvent);
 	return true;
 }
 
-//inline Ã³¸® µÆ°í
-inline uint16 CNetServer::GetSessionIndex(int64 sessionId)
+
+//ì´ì •ë„ë„ inlineì´ ë˜ë‚˜
+// close socketì„ 1íšŒí•˜ê¸° ìœ„í•´ì„œ
+inline bool CLanServer::TryReleaseSession(Session* session, int line)
+{
+	// ëª©í‘œ, ë³€ê²½í• ê°’, ì˜ˆìƒê°’
+	// ì˜ˆìƒê°’ ioFlag = 0, ioCount = 0;
+	// ë³€ê²½í• ê°’ ioFlag = 1, ioCount = 0;
+	int64 exchangeValue = 0x0000'0001'0000'0001;
+	if (InterlockedCompareExchange64((int64*)(&session->_ioFlag), exchangeValue, 0) != 0)
+	{
+		//ioFlagê°€ 0ì´ ì•„ë‹ˆì—ˆìœ¼ë©´
+		// ì•„ì§ ì‚¬ìš©ì¤‘ì¸ ì„¸ì…˜ì„: relase ë‹¤ìŒì—
+		return false;
+	}
+
+	//ë””ë²„ê¹…ìš©
+	//if (line == CHECK_RELEASE)
+	//{
+	//	InterlockedIncrement64(&_releaseFlageDisconnect);
+	//}
+	//LOG(L"Disconnect", LogLevel::Debug, L"ReleaseSession session Id: sessiond Id :%d, line :  %d", session->_sessionId, line);
+	//SessionLog sessionLog = { LogCode::Disconnect, (uint32)line };
+	//LOG_SESSION(session, sessionLog);
+
+
+	// release threadì— enqueueí•œë‹¤
+	_releaseSessionQueue.Enqueue(session);
+	SetEvent(hReleaseEvent);
+	return true;
+}
+
+//inline ì²˜ë¦¬ ëê³ 
+inline uint16 CLanServer::GetSessionIndex(int64 sessionId)
 {
 	//uint16* ptr = (uint16*)&sessionId;
 	/*ptr += 3;
@@ -750,11 +875,12 @@ inline uint16 CNetServer::GetSessionIndex(int64 sessionId)
 }
 
 
-inline void CNetServer::IncIoCount(Session* session)
+//inline ëê³ 
+inline void CLanServer::IncIoCount(Session* session)
 {
 	InterlockedIncrement(&session->_ioFlag._ioCount);
-	/*SessionLog sessionLog = { LogCode::IncIo, after };
-	LOG_SESSION(session, sessionLog);*/
+	//SessionLog sessionLog = { LogCode::IncIo, after };
+	//LOG_SESSION(session, sessionLog);
 }
 
 
@@ -763,58 +889,67 @@ inline void CNetServer::IncIoCount(Session* session)
 /// </summary>
 /// <param name="session"></param>
 /// <returns> return true when disconnected</returns>
-inline bool CNetServer::DecIoCount(Session* session)
+inline bool CLanServer::DecIoCount(Session* session)
 {
 	if (InterlockedDecrement(&session->_ioFlag._ioCount) == 0)
 	{
-		TryReleaseSession(session, (uint32)__LINE__);
-		return false;
+		TryReleaseSession(session);
+		return true;
 	}
-	
-	return true;
+	return false;
+
 }
 
-inline Session* CNetServer::GetSession(int64 sessionId)
+inline Session* CLanServer::GetSession(int64 sessionId)
 {
-	//Release¶û lock¾øÀÌ µ¿±âÈ­ ÇÏ±â À§ÇØ
-	// ioCount¸¦ Áõ°¡½ÃÅ²¼ø°£ release´Â ¸øÇÏ°í ÀÌ ¾²·¹µå ÀÌÇÔ¼öÀÇ ¼¼¼ÇÀÓ
+	//Releaseë‘ lockì—†ì´ ë™ê¸°í™” í•˜ê¸° ìœ„í•´
+	// ioCountë¥¼ ì¦ê°€ì‹œí‚¨ìˆœê°„ releaseëŠ” ëª»í•˜ê³  ì´ ì“°ë ˆë“œ ì´í•¨ìˆ˜ì˜ ì„¸ì…˜ì„
 
-	// io count°¡ 1ÀÓ
-	// io count°¡ 1ÀÌ¸é release´Â ¸øµé¾î¿È
-	// ³»°¡ ±×³É ioCount Áõ°¡½ÃÄ×À½
-	// ±Ùµ¥ relaseFlag ÀÌ¹Ì trueÀÓ
-	// ±×·³ ÀÌ¼¼¼ÇÀº releaseµÈ ¼¼¼ÇÀÌ°Å³ª release ÁßÀÎ ¼¼¼ÇÀÌ°í
-	// ³»°¡ º¸³»·ÁÇß´ø ¼¼¼ÇÀÌµç. ´Ù¸¥ ¼¼¼ÇÀÌµç
-	// ±×³É decremnet io countÇÏ°í ³ª°¡¸éµÊ
+	// io countê°€ 1ì„
+	// io countê°€ 1ì´ë©´ releaseëŠ” ëª»ë“¤ì–´ì˜´
+	// ë‚´ê°€ ê·¸ëƒ¥ ioCount ì¦ê°€ì‹œì¼°ìŒ
+	// ê·¼ë° relaseFlag ì´ë¯¸ trueì„
+	// ê·¸ëŸ¼ ì´ì„¸ì…˜ì€ releaseëœ ì„¸ì…˜ì´ê±°ë‚˜ release ì¤‘ì¸ ì„¸ì…˜ì´ê³ 
+	// ë‚´ê°€ ë³´ë‚´ë ¤í–ˆë˜ ì„¸ì…˜ì´ë“ . ë‹¤ë¥¸ ì„¸ì…˜ì´ë“ 
+	// ê·¸ëƒ¥ decremnet io countí•˜ê³  ë‚˜ê°€ë©´ë¨
 
-	// releaseÁßÀÎ ¼¼¼ÇÀÌ¾ú´Ù -> iocount °¨¼Ò½ÃÅ°°í ³ª°¡¸éµÊ
-	// releaseµÈ ¼¼¼ÇÀÌ¾úµû -> iocount °¨¼Ò½ÃÅ°°í ³ª°¡¸éµÊ
-	// releaseµÇ°í Àç»ç¿ë µÇ¾úµû -> iocount °¨¼Ò½ÃÅ°°í ³ª°¡¸éµÊ
+	// releaseì¤‘ì¸ ì„¸ì…˜ì´ì—ˆë‹¤ -> iocount ê°ì†Œì‹œí‚¤ê³  ë‚˜ê°€ë©´ë¨
+	// releaseëœ ì„¸ì…˜ì´ì—ˆë”° -> iocount ê°ì†Œì‹œí‚¤ê³  ë‚˜ê°€ë©´ë¨
+	// releaseë˜ê³  ì¬ì‚¬ìš© ë˜ì—ˆë”° -> iocount ê°ì†Œì‹œí‚¤ê³  ë‚˜ê°€ë©´ë¨
 		//uint16 sessionIndex = 
 		/*if (sessionIndex < 0 || sessionIndex > MAX_SESSION_NUM)
 			return nullptr;*/
 	Session* s = &_sessionArr[GetSessionIndex(sessionId)];
 
 	IncIoCount(s);
-	//ÀÌ¹Ì ²÷±ä»óÅÂ¸é
+	//ì´ë¯¸ ëŠê¸´ìƒíƒœë©´
 	if (s->_ioFlag._releaseFlag == 1 || sessionId != s->_sessionId)
 	{
 		DecIoCount(s);
 		return nullptr;
 	}
 	return s;
+	//return s;
+	////int64 findedSessionId = s->_sessionId;
+	//if (sessionId != s->_sessionId)
+	//{
+	//	DecIoCount(s);
+	//	return nullptr;
+	//}
+
+	//return s;
 }
 
-inline void CNetServer::PutBackSession(Session* session)
+inline void CLanServer::PutBackSession(Session* session)
 {
 	DecIoCount(session);
 }
 
-void CNetServer::ReqWSASend(Session* session)
+void CLanServer::ReqWSASend(Session* session)
 {
 	int retVal;
 	int checkedQueueSize = session->_sendQueue.Size();
-	// ¹Ù¶óº» size¸¸Å­ dequeue¸¦ ¸øÇÒ¼ö ÀÖ´Âµ¥
+	// ë°”ë¼ë³¸ sizeë§Œí¼ dequeueë¥¼ ëª»í• ìˆ˜ ìˆëŠ”ë°
 
 	/*if (useSize % 8 != 0)
 	{
@@ -841,14 +976,14 @@ void CNetServer::ReqWSASend(Session* session)
 		bool bDequeueSucceed = session->_sendQueue.Dequeue(ptr);
 		if (!bDequeueSucceed)
 		{
-			//½ÇÆĞÇßÀ¸¸é
+			//ì‹¤íŒ¨í–ˆìœ¼ë©´
 			break;
 		}
 		wsaSendBuf[dequeuedSize].buf = ptr->GetBufferPtr();
 		wsaSendBuf[dequeuedSize].len = ptr->GetDataSize();
 		dequeuedSize++;
 
-	
+
 		session->_sendedQueue.push(ptr);
 	}
 
@@ -870,7 +1005,7 @@ void CNetServer::ReqWSASend(Session* session)
 		{
 			//CancelIoEx((HANDLE)session->_socket, (LPOVERLAPPED)&session->_recvOverlapped);
 
-			// TODO: ·Î±× Âï±â
+			// TODO: ë¡œê·¸ ì°ê¸°
 			if (sendError != WSAECONNRESET && sendError != WSAECONNABORTED)
 			{
 				LOG(L"Disconnect", LogLevel::Error, L"WSA SendError: %d, errorCode :%d", session->_sessionId, sendError);
@@ -886,7 +1021,7 @@ void CNetServer::ReqWSASend(Session* session)
 		}
 		else
 		{
-			//ºñµ¿±â·Î ¿äÃ» ÇßÀ¸¸é
+			//ë¹„ë™ê¸°ë¡œ ìš”ì²­ í–ˆìœ¼ë©´
 			if (session->_disconnectRequested)
 			{
 				CancelIoEx((HANDLE)session->_socket, (LPOVERLAPPED)&session->_sendOverlapped);
@@ -894,14 +1029,26 @@ void CNetServer::ReqWSASend(Session* session)
 				return;
 
 			}
-			//DecIoCount(session);  ¿Ï·áÅëÁö´Â µé¾î°£°Å´Ï±î ¿Ï·áÅëÁö¿¡¼­ DecIoCountÇØ¼­ ¿©±â¼­ ÇÏ¸é¾ÈµÊ
+			//DecIoCount(session);  ì™„ë£Œí†µì§€ëŠ” ë“¤ì–´ê°„ê±°ë‹ˆê¹Œ ì™„ë£Œí†µì§€ì—ì„œ DecIoCountí•´ì„œ ì—¬ê¸°ì„œ í•˜ë©´ì•ˆë¨
 			return;
 		}
 	}
 }
 
 
-int64 CNetServer::GetSessionId(int64 sessionId)
+void CLanServer::RegisterGameThread(GameThread* gameThread)
+{
+
+}
+
+void CLanServer::RegisterDefaultGameThread(GameThread* gameThread)
+{
+	_defaultGameThread = gameThread;
+}
+
+
+
+int64 CLanServer::GetSessionId(int64 sessionId)
 {
 	//6 byte
 	// 0x0000'FFFF'FFFF'FFFF
@@ -910,19 +1057,33 @@ int64 CNetServer::GetSessionId(int64 sessionId)
 }
 
 
-void CNetServer::InitSessionArr()
+void CLanServer::InitSessionArr()
 {
 	//memset(_sessionArr, 0, sizeof(_sessionArr));
 	//InitializeCriticalSection(&_sessionIndexLock);
 	for (int i = MAX_SESSION_NUM - 1; i >= 0; i--)
 	{
+		InitializeSRWLock(&_sessionArr[i]._lock);
 		_emptySessionIndex.Push(i);
 	}
 }
 
-void CNetServer::ClearSesssionArr()
+
+void CLanServer::ClearSesssionArr()
 {
-	//TODO:  ±¸Çö ÇÑ´Ù¸é
-	// packet queue¿¡ ³²Àº°Å ¹İ³³
+	// packet queueì— ë‚¨ì€ê±° ë°˜ë‚©
 	// close socket
+	for (int i = 0; i < MAX_SESSION_NUM; i++)
+	{
+		Session* session = &_sessionArr[i];
+		if (session->_socket == INVALID_SOCKET)
+			continue;
+
+		closesocket(session->_socket);
+		session->_socket = INVALID_SOCKET;
+
+		session->ClearSendedQueue();
+		session->ClearSendQueue();
+		session->ClearPacketQueue();
+	}
 }

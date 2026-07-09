@@ -76,7 +76,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\lib\Type;$(SolutionDir)..\lib\Util;$(SolutionDir)..\lib\DataStructure;$(SolutionDir)..\lib\Data;$(SolutionDir)..\lib\Netlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\lib\Type;$(SolutionDir)..\lib\Util;$(SolutionDir)..\lib\DataStructure;$(SolutionDir)..\lib\Data;$(SolutionDir)..\lib\NetlibReleaseThread</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -93,7 +93,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\lib\Type;$(SolutionDir)..\lib\Util;$(SolutionDir)..\lib\DataStructure;$(SolutionDir)..\lib\Data;$(SolutionDir)..\lib\Netlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\lib\Type;$(SolutionDir)..\lib\Util;$(SolutionDir)..\lib\DataStructure;$(SolutionDir)..\lib\Data;$(SolutionDir)..\lib\NetlibReleaseThread</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -111,7 +111,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\lib\Type;$(SolutionDir)..\lib\Util;$(SolutionDir)..\lib\DataStructure;$(SolutionDir)..\lib\Data;$(SolutionDir)..\lib\Netlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\lib\Type;$(SolutionDir)..\lib\Util;$(SolutionDir)..\lib\DataStructure;$(SolutionDir)..\lib\Data;$(SolutionDir)..\lib\NetlibReleaseThread</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -128,7 +128,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\lib\Type;$(SolutionDir)..\lib\Util;$(SolutionDir)..\lib\DataStructure;$(SolutionDir)..\lib\Data;$(SolutionDir)..\lib\Netlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\lib\Type;$(SolutionDir)..\lib\Util;$(SolutionDir)..\lib\DataStructure;$(SolutionDir)..\lib\Data;$(SolutionDir)..\lib\NetlibReleaseThread</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -143,10 +143,10 @@
   <ItemGroup>
     <ClCompile Include="..\..\lib\DataStructure\TlsObjectPool.cpp" />
     <ClCompile Include="..\..\lib\Data\Data.cpp" />
-    <ClCompile Include="..\..\lib\Netlib\CLanClient.cpp" />
-    <ClCompile Include="..\..\lib\Netlib\CLanServer.cpp" />
-    <ClCompile Include="..\..\lib\Netlib\CNetServer.cpp" />
-    <ClCompile Include="..\..\lib\Netlib\Session.cpp" />
+    <ClCompile Include="..\..\lib\NetlibReleaseThread\CLanClient.cpp" />
+    <ClCompile Include="..\..\lib\NetlibReleaseThread\CLanServer.cpp" />
+    <ClCompile Include="..\..\lib\NetlibReleaseThread\CNetServer.cpp" />
+    <ClCompile Include="..\..\lib\NetlibReleaseThread\Session.cpp" />
     <ClCompile Include="..\..\lib\Type\Type.cpp" />
     <ClCompile Include="..\..\lib\Util\CpuUsage.cpp" />
     <ClCompile Include="..\..\lib\Util\Log.cpp" />
@@ -172,11 +172,11 @@
     <ClInclude Include="..\..\lib\DataStructure\SerializeBuffer.h" />
     <ClInclude Include="..\..\lib\DataStructure\TlsObjectPool.h" />
     <ClInclude Include="..\..\lib\Data\Data.h" />
-    <ClInclude Include="..\..\lib\Netlib\CLanClient.h" />
-    <ClInclude Include="..\..\lib\Netlib\CLanServer.h" />
-    <ClInclude Include="..\..\lib\Netlib\CNetServer.h" />
-    <ClInclude Include="..\..\lib\Netlib\PacketHeader.h" />
-    <ClInclude Include="..\..\lib\Netlib\Session.h" />
+    <ClInclude Include="..\..\lib\NetlibReleaseThread\CLanClient.h" />
+    <ClInclude Include="..\..\lib\NetlibReleaseThread\CLanServer.h" />
+    <ClInclude Include="..\..\lib\NetlibReleaseThread\CNetServer.h" />
+    <ClInclude Include="..\..\lib\NetlibReleaseThread\PacketHeader.h" />
+    <ClInclude Include="..\..\lib\NetlibReleaseThread\Session.h" />
     <ClInclude Include="..\..\lib\Type\Type.h" />
     <ClInclude Include="..\..\lib\Util\CpuUsage.h" />
     <ClInclude Include="..\..\lib\Util\Log.h" />

@@ -64,9 +64,6 @@
     <ClCompile Include="..\..\lib\GameServerLib\CLanClient.cpp">
       <Filter>lib\GameServerLib\Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\lib\GameServerLib\CNetServer.cpp">
-      <Filter>lib\GameServerLib\Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\lib\GameServerLib\GameThread.cpp">
       <Filter>lib\GameServerLib\Source</Filter>
     </ClCompile>
@@ -151,15 +148,15 @@
     <ClCompile Include="JumpPointSearch.cpp">
       <Filter>lib\Util\Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\lib\GameServerLib\CNetServer.cpp">
+      <Filter>lib\GameServerLib\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\lib\GameServerLib\Session.h">
       <Filter>lib\GameServerLib\Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\lib\GameServerLib\CLanClient.h">
-      <Filter>lib\GameServerLib\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lib\GameServerLib\CNetServer.h">
       <Filter>lib\GameServerLib\Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\lib\GameServerLib\GameThread.h">
@@ -269,6 +266,12 @@
     </ClInclude>
     <ClInclude Include="JumpPointSearch.h">
       <Filter>lib\Util\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\Monitor\MonitorProtocol.h">
+      <Filter>MonitorClient\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\GameServerLib\CNetServer.h">
+      <Filter>lib\GameServerLib\Header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -3,59 +3,52 @@
 #include "Session.h"
 #include <stack>
 #include "LockFreeStack.h"
-#include "Data.h"
-
+#include "GameThread.h"
+#include <vector>
+#include "Data.h"	
 #define MAX_SESSION_NUM 20000
-#define MAX_PACKET_NUM_IN_SEND_QUEUE 2000
+#define CHECK_RELEASE 999999
 
 class CPacket;
 
-struct SendInfo
+class CLanServer
 {
-	int64 sessionid;
-	CPacket* packet;
-};
-
-class CNetServer
-{
+	friend class GameThread;
 public:
-	CNetServer();
+	CLanServer();
 
-	virtual ~CNetServer();
+	virtual ~CLanServer();
 
 	// nagle option, sendzerocopy
 	bool Start(uint16 port, uint32 concurrentThreadNum, uint32 workerThreadNum, int nagle = 1, int sendZeroCopy = 0); // open ip, port, worker thread num, nagle option, maximum client num;
 	void Stop();
 	void Disconnect(int64 sessionId);
 	void SendPacket(int64 sessionId, CPacket* packet);
+	void SendPackets(int64 sessionId, std::vector<CPacket*>& packet);
+
 	/// <summary>
 	/// return false to reject client accept
 	/// else return true
 	/// </summary>
 	/// <returns> </returns>
 	virtual bool OnConnectionRequest() = 0;
-	//accept후 접속 처리 완료 후 호출
-	//virtual void OnAccept(int64 sessionId, WCHAR* _sessionIp) = 0;
-	virtual void OnAccept(int64 sessionId) = 0;
-	//release후 호출
-	virtual void OnDisconnect(int64 sessionId) = 0;
-	virtual void OnRecvPacket(int64 sessionId, CPacket* packet) = 0;
 	virtual void OnError(int errorCode, WCHAR* errorMessage) = 0;
+
 
 private:
 	// iocp worker thread
 	static unsigned __stdcall  WorkerThreadStatic(void* param)
 	{
-		CNetServer* thisClass = (CNetServer*)param;
+		CLanServer* thisClass = (CLanServer*)param;
 		return thisClass->WorkerThread();
 	}
 
 	unsigned __stdcall WorkerThread();
-	
+
 	// accept thread
 	static unsigned __stdcall AcceptThreadStatic(void* param)
 	{
-		CNetServer* thisClass = (CNetServer*)param;
+		CLanServer* thisClass = (CLanServer*)param;
 		return thisClass->AcceptThread();
 	}
 	unsigned __stdcall AcceptThread();
@@ -63,7 +56,7 @@ private:
 	// monitoring thread
 	static unsigned __stdcall MonitorThreadStatic(void* param)
 	{
-		CNetServer* thisClass = (CNetServer*)param;
+		CLanServer* thisClass = (CLanServer*)param;
 		return thisClass->MonitorThread();
 	}
 	unsigned __stdcall MonitorThread();
@@ -71,13 +64,11 @@ private:
 	// release thread
 	static unsigned __stdcall ReleaseThreadStatic(void* param)
 	{
-		CNetServer* thisClass = (CNetServer*)param;
+		CLanServer* thisClass = (CLanServer*)param;
 		return thisClass->ReleaseThread();
 	}
-	
 	unsigned __stdcall ReleaseThread();
-	LockFreeQueue<Session*> _releaseQueue;
-	HANDLE _hReleaseEvent;	
+
 
 	bool SendPost(Session* s);
 	bool RecvPost(Session* s);
@@ -91,6 +82,9 @@ public:
 	}
 
 private:
+	Session _sessionArr[MAX_SESSION_NUM];
+
+private:
 	HANDLE _iocpHandle = NULL;
 	bool _bStopNetwork = false;
 	int _threadNumber = 0;
@@ -98,7 +92,7 @@ private:
 	SOCKET _listenSocket = INVALID_SOCKET;
 	uint16 _serverPort = 0;
 
-	
+
 public: //logging
 #define TPS_ARR_NUM 5
 
@@ -149,18 +143,6 @@ public: //logging
 		return _recvConnResetTotal;
 	}
 
-	int64 GetRttLast()
-	{
-		return _lastRtt;
-	}
-
-	int64 GetRttAverage()
-	{
-		if (_rttCount == 0)
-			return 0;
-
-		return _rttSum / _rttCount;
-	}
 
 	int64 GetSessionNum()
 	{
@@ -188,12 +170,12 @@ private: // 로깅
 	int32 _monitoredNetworkByteSendTPS[TPS_ARR_NUM] = { 0, };
 	int32 _monitoredNetworkByteRecvTPS[TPS_ARR_NUM] = { 0, };
 
-
 	int64 _processSendPacket = 0;
 	int64 _processRecvPacket = 0;
 	int64 _acceptPacket = 0;
 	long _networkSend = 0;
 	long _networkRecv = 0;
+
 
 	int64 _totalDisconnet = 0;
 	int64 _totalAccept = 0;
@@ -204,6 +186,7 @@ private: // 로깅
 
 private: // 세션
 	Session* CreateSession(SOCKET socket, SOCKADDR_IN* clientAddr);
+	bool TryReleaseSession(Session* session);
 	bool TryReleaseSession(Session* session, int line);
 	bool ReleaseSession(Session* session);
 	uint16 GetSessionIndex(int64 sessionId);
@@ -211,10 +194,12 @@ private: // 세션
 	void ClearSesssionArr();
 
 private: // 세션 배열
-	Session _sessionArr[MAX_SESSION_NUM];
 	LockFreeStack<uint16> _emptySessionIndex;
 	SRWLOCK _sessionArrLock;
-	//LockFreeQueue<Session*> _sendThreadQueue;
+
+private: // Release Thread
+	LockFreeQueue<Session*> _releaseSessionQueue;
+	HANDLE hReleaseEvent = NULL;
 
 private:
 	void IncIoCount(Session* session);
@@ -223,16 +208,20 @@ private:
 	void PutBackSession(Session* session);
 	void ReqWSASend(Session* session);
 
-private: // Rtt
-	int64 _rttSum = 0;
-	int64 _rttCount = 0;
-	int64 _lastRtt = 0;
 
-private: 
+private:
 	//nagle option default true
 	int _nagle = 1;
 	//send zero copy option default false;
 	int _sendZeroCopy = 0;
+
+
+protected:
+	// TODO: CreateGameThread
+	void RegisterGameThread(GameThread* gameThread);
+	void RegisterDefaultGameThread(GameThread* gameThread);
+
+	GameThread* _defaultGameThread;
 
 private:
 	uint16 _packetKey = Data::serverPacketKey;

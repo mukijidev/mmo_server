@@ -187,6 +187,12 @@ unsigned __stdcall CLanServer::WorkerThread()
 			continue;
 		}
 
+		if (cbTransferred == 0)
+		{
+			DecIoCount(s);
+			continue;
+		}
+
 		if (overlapped == &(s->_sendOverlapped))
 		{
 			int32 networkSend = (int32)cbTransferred + (((int32)cbTransferred) / 1460 + 1) * 40;
@@ -216,29 +222,35 @@ unsigned __stdcall CLanServer::WorkerThread()
 			while (true)
 			{
 				// 패킷 헤더 만큼 못빼오는 경우
-				if (s->_recvQueue.GetUseSize() < sizeof(NetHeader))
+				if (s->_recvQueue.GetUseSize() < sizeof(LanHeader))
 				{
 					break;
 				}
 
 				// 헤더만큼 일단 Peek해오는데
-				NetHeader header;
-				int peekVal = s->_recvQueue.Peek((char*)&header, sizeof(NetHeader));
-				if (peekVal != sizeof(NetHeader))
+				LanHeader header;
+				int peekVal = s->_recvQueue.Peek((char*)&header, sizeof(LanHeader));
+				if (peekVal != sizeof(LanHeader))
 				{
 					__debugbreak();
 				}
 
 				// len만큼 못빼오는 경우
 				int dataSize = header._len;
-				if (s->_recvQueue.GetUseSize() < sizeof(NetHeader) + dataSize)
+				if (dataSize > 256)        
+				{
+					Disconnect(s);
+					break;
+				}
+
+				if (s->_recvQueue.GetUseSize() < sizeof(LanHeader) + dataSize)
 				{
 					break;
 				}
 
 				// header peek한것 읽은것으로 처리하고
-				int moveHeaderVal = s->_recvQueue.MoveFront(sizeof(NetHeader));
-				if (moveHeaderVal != sizeof(NetHeader))
+				int moveHeaderVal = s->_recvQueue.MoveFront(sizeof(LanHeader));
+				if (moveHeaderVal != sizeof(LanHeader))
 				{
 					__debugbreak();
 				}

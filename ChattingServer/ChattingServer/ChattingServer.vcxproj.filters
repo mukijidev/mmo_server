@@ -88,18 +88,6 @@
     <ClCompile Include="..\..\lib\DataStructure\TlsObjectPool.cpp">
       <Filter>DataStructure\Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\lib\Netlib\CLanClient.cpp">
-      <Filter>Netlib\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\lib\Netlib\CLanServer.cpp">
-      <Filter>Netlib\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\lib\Netlib\CNetServer.cpp">
-      <Filter>Netlib\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\lib\Netlib\Session.cpp">
-      <Filter>Netlib\Source</Filter>
-    </ClCompile>
     <ClCompile Include="MonitorPacketMaker.cpp">
       <Filter>MonitorClient\Source</Filter>
     </ClCompile>
@@ -129,6 +117,18 @@
     </ClCompile>
     <ClCompile Include="..\..\lib\Data\Data.cpp">
       <Filter>Data\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\NetlibReleaseThread\CLanClient.cpp">
+      <Filter>Netlib\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\NetlibReleaseThread\CLanServer.cpp">
+      <Filter>Netlib\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\NetlibReleaseThread\CNetServer.cpp">
+      <Filter>Netlib\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lib\NetlibReleaseThread\Session.cpp">
+      <Filter>Netlib\Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -168,21 +168,6 @@
     <ClInclude Include="..\..\lib\DataStructure\TlsObjectPool.h">
       <Filter>DataStructure\Header</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\lib\Netlib\CLanClient.h">
-      <Filter>Netlib\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lib\Netlib\CLanServer.h">
-      <Filter>Netlib\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lib\Netlib\CNetServer.h">
-      <Filter>Netlib\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lib\Netlib\PacketHeader.h">
-      <Filter>Netlib\Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\lib\Netlib\Session.h">
-      <Filter>Netlib\Header</Filter>
-    </ClInclude>
     <ClInclude Include="MonitorClient.h">
       <Filter>MonitorClient\Header</Filter>
     </ClInclude>
@@ -215,6 +200,21 @@
     </ClInclude>
     <ClInclude Include="..\..\lib\Data\Data.h">
       <Filter>Data\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\NetlibReleaseThread\CLanClient.h">
+      <Filter>Netlib\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\NetlibReleaseThread\CLanServer.h">
+      <Filter>Netlib\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\NetlibReleaseThread\CNetServer.h">
+      <Filter>Netlib\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\NetlibReleaseThread\PacketHeader.h">
+      <Filter>Netlib\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lib\NetlibReleaseThread\Session.h">
+      <Filter>Netlib\Header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

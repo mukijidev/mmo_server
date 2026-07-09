@@ -140,7 +140,6 @@ bool CLanClient::SendPacket(CPacket* packet)
 	}
 
 	packet->IncRefCount();
-	packet->Encode(30);
 	_clientSession->_sendQueue.Enqueue(packet);
 
 
@@ -184,6 +183,12 @@ unsigned __stdcall CLanClient::WorkerThread()
 		if (overlapped == (OVERLAPPED*)0x12345678)
 		{
 			ReqWSASend(s);
+			continue;
+		}
+
+		if (cbTransferred == 0)
+		{
+			DecIoCount(s);
 			continue;
 		}
 
@@ -248,13 +253,7 @@ unsigned __stdcall CLanClient::WorkerThread()
 				s->_recvQueue.Dequeue(buf, dataSize);
 				packet->MoveWritePos(dataSize);
 				//디코딩  ( checksum 실패 )
-				bool bDecodeSucceed = packet->Decode(&header, _packeyKey);
-				if (!bDecodeSucceed)
-				{
-					//checksum 실패했을시
-					//dec io count를 하고 다시 recvpost를 안함으로써 세션을 종료한다
-					Disconnect();
-				}
+
 				// 패킷 컨텐츠로 넘기고
 				OnRecvPacket(packet);
 				InterlockedIncrement64(&_processRecvPacket);
@@ -399,7 +398,6 @@ bool CLanClient::RecvPost(Session* session)
 			if (recvError != WSAECONNRESET && recvError != WSAECONNABORTED)
 			{
 				LOG(L"Client", LogLevel::Debug, L"WSA Recv error errorCode :%d", recvError);
-				return false;
 			}
 
 			DecIoCount(session);
@@ -602,7 +600,6 @@ bool CLanClient::ReleaseSession(Session* session)
 	InterlockedDecrement64(&_sessionNum);
 	//LeaveCriticalSection(&_sessionIndexLock);
 	InterlockedIncrement64(&_totalDisconnet);
-	delete session;
 	return true;
 }
 
