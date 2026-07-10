@@ -6,7 +6,7 @@
 	
 	ServerConcurrentThreadNum   =	 1
 	ServerWorkerThreadNum = 	 2
-	ServerPort = 103012
+	ServerPort = 10302
 	Nagle = 1
 	SendZeroCopy = 0
 	DBPort = 3306
