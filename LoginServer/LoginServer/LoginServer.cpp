@@ -338,36 +338,19 @@ void LoginServer::SetUserDataToRedis(Player* p)
 
 void LoginServer::GetIpForPlayer(Player* p, WCHAR* gameServerIp, uint16& gameServerPort, WCHAR* chatServerIp, uint16& chatServerPort)
 {
-	if (wmemcmp(p->_ip, L"10.0.1.2", wcslen(p->_ip)) == 0)
-	{
-		wmemcpy(gameServerIp, L"10.0.1.1", wcslen(L"10.0.1.1"));
-		wmemcpy(chatServerIp, L"10.0.1.1", wcslen(L"10.0.1.1"));
-		gameServerIp[wcslen(L"10.0.1.1")] = L'\0';
-		chatServerIp[wcslen(L"10.0.1.1")] = L'\0';
-	}
-	else if (wmemcmp(p->_ip, L"10.0.2.2", wcslen(p->_ip)) == 0)
-	{
-		wmemcpy(gameServerIp, L"10.0.2.1", wcslen(L"10.0.2.1"));
-		wmemcpy(chatServerIp, L"10.0.2.1", wcslen(L"10.0.2.1"));
-		gameServerIp[wcslen(L"10.0.2.1")] = L'\0';
-		chatServerIp[wcslen(L"10.0.2.1")] = L'\0';
-	}
-	else if (wmemcmp(p->_ip, L"127.0.0.1", wcslen(p->_ip)) == 0)
-	{
-		wmemcpy(gameServerIp, L"127.0.0.1", wcslen(L"127.0.0.1"));
-		wmemcpy(chatServerIp, L"127.0.0.1", wcslen(L"127.0.0.1"));
-		gameServerIp[wcslen(L"127.0.0.1")] = L'\0';
-		chatServerIp[wcslen(L"127.0.0.1")] = L'\0';
-	} 
-	else {
-		__debugbreak();
-	}
 
-	gameServerIp[wcslen(gameServerIp)] = L'\0';
-	chatServerIp[wcslen(chatServerIp)] = L'\0';
+	std::wstring wGameIp(Data::gameServerIp.begin(), Data::gameServerIp.end());
+	std::wstring wChatIp(Data::chatServerIp.begin(), Data::chatServerIp.end());
+
+	wmemcpy(gameServerIp, wGameIp.c_str(), wGameIp.size());
+	gameServerIp[wGameIp.size()] = L'\0';
+	wmemcpy(chatServerIp, wChatIp.c_str(), wChatIp.size());
+	chatServerIp[wChatIp.size()] = L'\0';
 
 	gameServerPort = _gameServerPort;
 	chatServerPort = _chattingServerPort;
+
+
 
 }
 

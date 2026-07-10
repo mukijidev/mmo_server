@@ -23,6 +23,9 @@ namespace Data
 	extern uint16 loginServerPort;
 	extern uint16 gameServerPort;
 
+	extern std::string gameServerIp;
+	extern std::string chatServerIp;
+
 
 	extern uint16 serverPacketCode;
 	extern uint16 serverPacketKey;

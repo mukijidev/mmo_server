@@ -21,6 +21,9 @@ namespace Data
 	uint16 loginServerPort = 0;
 	uint16 gameServerPort = 0;
 
+	std::string gameServerIp = "127.0.0.1";
+	std::string chatServerIp = "127.0.0.1";
+
 
 	uint16 serverPacketCode = 0;
 	uint16 serverPacketKey = 0;
@@ -193,6 +196,15 @@ namespace Data
 			return false;
 		}
 
+		chatServerIp = textParser.GetString("ChattingServerIp");
+		if (chatServerIp == "")
+		{
+			wprintf(L"load ChatServerIp failed");
+			return false;
+		}
+
+
+
 		bool changeNameSpaceToLogin = textParser.ChangeNamespace("LoginServer");
 		if (!changeNameSpaceToLogin)
 		{
@@ -211,6 +223,13 @@ namespace Data
 		if (!changeNameSpaceToGame)
 		{
 			wprintf(L"changeNameSpaceToGame failed");
+			return false;
+		}
+
+		gameServerIp = textParser.GetString("GameServerIp");
+		if (gameServerIp == "")
+		{
+			wprintf(L"load gameServerIp failed");
 			return false;
 		}
 

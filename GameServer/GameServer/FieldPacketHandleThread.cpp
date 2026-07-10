@@ -292,11 +292,12 @@ void FieldPacketHandleThread::OnEnterThread(int64 sessionId, void* ptr)
 	int spawnY;
 	GetSpawnXY(spawnX, spawnY);
 
-	if (p->playerInfo.PlayerID == 10001)
+	if (wcscmp(L"boom1", p->playerInfo.NickName) == 0)
 	{
-		spawnX = 6000;   // 12000 / 2 = ¸Ê Áß¾Ó
-		spawnY = 6000;
+		spawnX = 12000;   // 24000 / 2 = ¸Ê Áß¾Ó
+		spawnY = 12000;
 	}
+	
 
 	CPacket* spawnCharacterPacket = CPacket::Alloc();
 

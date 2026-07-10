@@ -16,11 +16,13 @@
 :ChattingServer
 {
 	ChattingServerPort = 10302
+	ChattingServerIp = 127.0.0.1
 }
 
 :GameServer
 {
 	GameServerPort = 10303
+	GameServerIp = 127.0.0.1
 }
 
 :LoginServer
