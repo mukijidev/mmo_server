@@ -221,6 +221,9 @@
     <ClInclude Include="..\..\lib\Util\TextParser.h">
       <Filter>lib\Util\Header</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\lib\Monitor\MonitorProtocol.h">
+      <Filter>MonitorCient\Header</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ServerConfig.txt">

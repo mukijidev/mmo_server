@@ -97,6 +97,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PreBuildEvent>
+      <Command>copy /Y "$(ProjectDir)ServerConfig.txt" "$(OutDir)ServerConfig.txt"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -118,6 +121,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PreBuildEvent>
+      <Command>copy /Y "$(ProjectDir)ServerConfig.txt" "$(OutDir)ServerConfig.txt"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -134,6 +140,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PreBuildEvent>
+      <Command>copy /Y "$(ProjectDir)ServerConfig.txt" "$(OutDir)ServerConfig.txt"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -146,7 +155,7 @@
       <Optimization>Disabled</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)mysql;$(SolutionDir)..\lib\Type;$(SolutionDir)..\lib\Util;$(SolutionDir)..\lib\DataStructure;$(SolutionDir)..\lib\NetlibReleaseThread;$(SolutionDir)..\lib\Data;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)mysql;$(SolutionDir)..\lib\Type;$(SolutionDir)..\lib\Util;$(SolutionDir)..\lib\DataStructure;$(SolutionDir)..\lib\NetlibReleaseThread;$(SolutionDir)..\lib\Data;$(SolutionDir)..\lib\Monitor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -159,6 +168,9 @@
       <Command>xcopy /D /Y "$(ProjectDir)libcrypto-1_1-x64.dll" "$(OutDir)"
 xcopy /D /Y "$(ProjectDir)libssl-1_1-x64.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>copy /Y "$(ProjectDir)ServerConfig.txt" "$(OutDir)ServerConfig.txt"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\lib\DataStructure\TlsObjectPool.cpp" />
@@ -192,6 +204,7 @@ xcopy /D /Y "$(ProjectDir)libssl-1_1-x64.dll" "$(OutDir)"</Command>
     <ClInclude Include="..\..\lib\DataStructure\SerializeBuffer.h" />
     <ClInclude Include="..\..\lib\DataStructure\TlsObjectPool.h" />
     <ClInclude Include="..\..\lib\Data\Data.h" />
+    <ClInclude Include="..\..\lib\Monitor\MonitorProtocol.h" />
     <ClInclude Include="..\..\lib\NetlibReleaseThread\CLanClient.h" />
     <ClInclude Include="..\..\lib\NetlibReleaseThread\CLanServer.h" />
     <ClInclude Include="..\..\lib\NetlibReleaseThread\CNetServer.h" />

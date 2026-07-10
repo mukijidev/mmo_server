@@ -18,6 +18,8 @@ public:
 
 	virtual void FrameUpdate(float deltaTime) override;
 
+public:
+	virtual int GetMaxMonsterNum() override { return _maxMonsterNum; }
 
 private:
 	//∏ÛΩ∫≈Õ

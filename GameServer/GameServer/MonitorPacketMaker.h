@@ -2,11 +2,6 @@
 #include "Type.h"
 class CPacket;
 
-
-void MP_CS_MONITOR_VALUE(CPacket* packet, uint16 sessionNumPerSector[50][50],
-	double cpuUsageTotal, double cpuUsageUser, double cpuUsageKernel,
-	double processUserAllocMemory, double processNonPageMemory,
-	double availableMemory, double nonPagedMemory,
-	int64 totalAccept, int64 acceptTps, int64 sendTps, int64 recvTps, int64 sessionNum,
-	int64 totalDisconnect, int64 loginTotal, int64 sectorMoveTotal, int64 messageTotal,
-	int64 heartbeatTotal, int64 averageRtt, int64 lastRtt);
+void MP_SS_MONITOR_LOGIN(CPacket* packet, int serverNo);
+void MP_SS_MONITOR_DATA_UPDATE(CPacket* pacekt, uint8 dataType, int dataValue, int timeStamp);
+void MP_SS_MONITOR_SECTOR(CPacket* packet, uint8 gridId, uint8 w, uint8 h, const uint8* cells);

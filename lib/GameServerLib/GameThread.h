@@ -83,6 +83,16 @@ public:
 		return _asyncJobQueue[0].Size();
 	}
 
+	int GetPlayerJpsQueueSize() { return (int)_asyncJobQueue[ASYNC_JOB_THREAD_INDEX_ONE].Size(); }
+	int GetMonsterJpsQueueSize() { return (int)_asyncJobQueue[ASYNC_JOB_THREAD_INDEX_TWO].Size(); }
+
+	int64 GetFrameAvgMs() { static int i = 0; return _frameAvgArr[i++ % TPS_ARR_NUM]; }
+	int64 GetFrameMaxMs() { static int i = 0; return _frameMaxArr[i++ % TPS_ARR_NUM]; }
+
+	int GetPlayerJpsTps() { static int i = 0; return (int)_playerJpsTpsArr[i++ % TPS_ARR_NUM]; }
+	int GetMonsterJpsTps() { static int i = 0; return (int)_monsterJpsTpsArr[i++ % TPS_ARR_NUM]; }
+	int GetDbWriteTps() { static int i = 0; return (int)_dbWriteTpsArr[i++ % TPS_ARR_NUM]; }
+
 	int64 GetJPSFps()
 	{
 		static int sendIndex = 0;
@@ -128,6 +138,18 @@ private:
 	int64 _updateTps = 0;
 	int64 _jpsTpsArr[TPS_ARR_NUM] = { 0, };
 	int64 _jpsTps = 0;
+
+	int64 _frameMsAccum = 0;
+	int   _frameTickCount = 0;
+	int   _frameMsMax = 0;
+	int64 _frameAvgArr[TPS_ARR_NUM] = { 0, };
+	int64 _frameMaxArr[TPS_ARR_NUM] = { 0, };
+
+protected:
+	int64 _playerJpsTps = 0, _monsterJpsTps = 0, _dbWriteTps = 0;
+	int64 _playerJpsTpsArr[TPS_ARR_NUM] = { 0, };
+	int64 _monsterJpsTpsArr[TPS_ARR_NUM] = { 0, };
+	int64 _dbWriteTpsArr[TPS_ARR_NUM] = { 0, };
 
 private:
 	//TODO: fram Ã³¸®

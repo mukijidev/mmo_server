@@ -89,6 +89,9 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(ProjectDir)ServerConfig.txt" "$(OutDir)ServerConfig.txt"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -109,6 +112,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(ProjectDir)ServerConfig.txt" "$(OutDir)ServerConfig.txt"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -124,6 +130,9 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(ProjectDir)ServerConfig.txt" "$(OutDir)ServerConfig.txt"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -146,10 +155,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /D /Y /I "$(ProjectDir)map\*.dat" "$(OutDir)map\"
-xcopy /D /Y "$(ProjectDir)libcrypto-1_1-x64.dll" "$(OutDir)"
-xcopy /D /Y "$(ProjectDir)libssl-1_1-x64.dll" "$(OutDir)"
-</Command>
+      <Command>copy /Y "$(ProjectDir)ServerConfig.txt" "$(OutDir)ServerConfig.txt"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

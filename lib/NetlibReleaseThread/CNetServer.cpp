@@ -610,7 +610,7 @@ bool CNetServer::AcceptProcess(SOCKET socket, SOCKADDR_IN* clientAddr)
 	}
 
 	// ÄÁÅÙÃ÷ accept Ã³¸®
-	OnAccept(session->_sessionId);
+	OnAccept(session->_sessionId, session->_ip);
 
 	SessionLog sessionLog = { LogCode::Accpet, (uint32)__LINE__ };
 	LOG_SESSION(session, sessionLog);

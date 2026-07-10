@@ -216,6 +216,9 @@
     <ClInclude Include="..\..\lib\NetlibReleaseThread\Session.h">
       <Filter>Netlib\Header</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\lib\Monitor\MonitorProtocol.h">
+      <Filter>MonitorClient\Header</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ServerConfig.txt">

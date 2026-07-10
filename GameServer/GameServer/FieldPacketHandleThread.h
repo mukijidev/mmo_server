@@ -151,5 +151,14 @@ private:
 public:
 	void LogAndResetFindPathDebug(const char* name);
 
+	int GetDBQueueSize() { return (int)_dbJobQueue.size(); }
+	int GetAliveMonsterNum() { return (int)_monsterMap.size(); }
+	virtual int GetMaxMonsterNum() { return 0; }
+	void CopyMonitorSectorCells(uint8* dst) { memcpy(dst, (const void*)_monSectorCells, sizeof(_monSectorCells)); }
+	void UpdateMonitorSector();
+
+
+	uint8 _monSectorCells[225] = { 0, };
+	DWORD _monSectorLastTime = 0;
 };
 

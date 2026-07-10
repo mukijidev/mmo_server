@@ -16,6 +16,7 @@
 #include <cpp_redis/cpp_redis>
 #include "CpuUsage.h"
 #include <Type.h>
+#include "MonitorProtocol.h"
 
 using namespace std;
 
@@ -94,10 +95,10 @@ bool LoginServer::OnConnectionRequest()
 	return true;
 }
 
-void LoginServer::OnAccept(int64 sessionId)
-{
-
-}
+//void LoginServer::OnAccept(int64 sessionId)
+//{
+//
+//}
 
 int64 LoginServer::LoginByIdPassword(const char* id, const char* pw)
 {
@@ -627,12 +628,11 @@ bool LoginServer::ActivateMonitorClient(const WCHAR* serverIp, uint16 port, uint
 
 unsigned int __stdcall LoginServer::MonitorSendThread()
 {
-	uint16 sessionNumPerSector[50][50];
 	PerformanceMonitorData performanceMonitorData;
 	CpuUsage cpuUsage;
+	
 	CPacket* loginPacket = CPacket::Alloc();
-	int serverNo = LOGIN_SERVER_NO;
-
+	int serverNo = SERVER_NO_LOGIN;
 	MP_SS_MONITOR_LOGIN(loginPacket, serverNo);
 	_monitorClient->SendPacket(loginPacket);
 	CPacket::Free(loginPacket);
@@ -643,75 +643,17 @@ unsigned int __stdcall LoginServer::MonitorSendThread()
 		//1초마다 한번씩 보내기 좀 더 늘릴까?
 		Sleep(1000);
 
+		long long llTick; time(&llTick); int ts = (int)llTick;
+		int packetUseCount = (int)CPacket::GetUseCount();
+		_performanceMonitor.Update(performanceMonitorData);
+		cpuUsage.UpdateCpuTime();
 
-		//long long llTick;
-		//time(&llTick);
-		//int sendTick = (int)llTick;
-
-		//_performanceMonitor.Update(performanceMonitorData);
-		//cpuUsage.UpdateCpuTime();
-		//int processorCpuTotal = cpuUsage.ProcessorTotal();
-
-		////로그인서버 패킷 풀 사용량
-		//int packetUseCount = (int)CPacket::GetUseCount();
-		//CPacket* usecountpacket = CPacket::Alloc();
-		//uint8 dataType = dfMONITOR_DATA_TYPE_LOGIN_PACKET_POOL;
-		//MP_SC_MONITOR_TOOL_DATA_UPDATE(usecountpacket, dataType, packetUseCount, sendTick);
-		//_monitorClient->SendPacket(usecountpacket);
-		//CPacket::Free(usecountpacket);
-
-		////로그인 서버 cpu
-		//int processCpuTotal = cpuUsage.ProcessTotal();
-		//CPacket* cpupacket = CPacket::Alloc();
-		//dataType = dfMONITOR_DATA_TYPE_LOGIN_SERVER_CPU;
-		//MP_SC_MONITOR_TOOL_DATA_UPDATE(cpupacket, dataType, processCpuTotal, sendTick);
-		//_monitorClient->SendPacket(cpupacket);
-		//CPacket::Free(cpupacket);
-
-		//// 로그인 서버 메모리
-		//int processUserAllocMemory = (int)performanceMonitorData.processUserAllocMemoryCounterVal.doubleValue / 1'000'000;
-		//_processUserAllocMemory = processUserAllocMemory;
-		//CPacket* mempacket = CPacket::Alloc();
-		//dataType = dfMONITOR_DATA_TYPE_LOGIN_SERVER_MEM;
-		//MP_SC_MONITOR_TOOL_DATA_UPDATE(mempacket, dataType, processUserAllocMemory, sendTick);
-		//_monitorClient->SendPacket(mempacket);
-		//CPacket::Free(mempacket);
-
-		////로그인 서버 세션수
-		//int sessionNum = (int)GetSessionNum();
-		//CPacket* sessionpacket = CPacket::Alloc();
-		//dataType = dfMONITOR_DATA_TYPE_LOGIN_SESSION;
-		//MP_SC_MONITOR_TOOL_DATA_UPDATE(sessionpacket, dataType, sessionNum, sendTick);
-		//_monitorClient->SendPacket(sessionpacket);
-		//CPacket::Free(sessionpacket);
-
-		////로그인서버 인증처리 초당 처리 횟수
-		//int logintps = GetLoginTps();
-		//CPacket* tpspacket = CPacket::Alloc();
-		//dataType = dfMONITOR_DATA_TYPE_LOGIN_AUTH_TPS;
-		//MP_SC_MONITOR_TOOL_DATA_UPDATE(tpspacket, dataType, logintps, sendTick);
-		//_monitorClient->SendPacket(tpspacket);
-		//CPacket::Free(tpspacket);
-
-
-
-		////네트워크 송신
-		//int networkSend = (int)GetNetworkSendByteTps() / 1000;
-		//CPacket* networkSendPacket = CPacket::Alloc();
-		//dataType = dfMONITOR_DATA_TYPE_GAME_DB_WRITE_TPS;
-		//MP_SC_MONITOR_TOOL_DATA_UPDATE(networkSendPacket, dataType, networkSend, sendTick);
-		//_monitorClient->SendPacket(networkSendPacket);
-		//CPacket::Free(networkSendPacket);
-
-		////네트워크 수신
-		//int networkRecv = (int)GetNetworkRecvByteTps() / 1000;
-		//CPacket* networkRecvPacket = CPacket::Alloc();
-		//dataType = dfMONITOR_DATA_TYPE_GAME_DB_WRITE_MSG;
-		//MP_SC_MONITOR_TOOL_DATA_UPDATE(networkRecvPacket, dataType, networkRecv, sendTick);
-		//_monitorClient->SendPacket(networkRecvPacket);
-		//CPacket::Free(networkRecvPacket);
-
-
+		SendMonitorData(dfMONITOR_DATA_TYPE_LOGIN_SERVER_RUN, 1, ts);
+		SendMonitorData(dfMONITOR_DATA_TYPE_LOGIN_SERVER_CPU, (int)cpuUsage.ProcessTotal(), ts);
+		SendMonitorData(dfMONITOR_DATA_TYPE_LOGIN_SERVER_MEM, (int)(performanceMonitorData.processUserAllocMemoryCounterVal.doubleValue / (1024.0 * 1024.0)), ts);
+		SendMonitorData(dfMONITOR_DATA_TYPE_LOGIN_PACKET_POOL, packetUseCount, ts);
+		SendMonitorData(dfMONITOR_DATA_TYPE_LOGIN_SESSION, (int)GetSessionNum(), ts);
+		SendMonitorData(dfMONITOR_DATA_TYPE_LOGIN_AUTH_TPS, (int)GetLoginTps(), ts);
 	}
 
 	return 0;

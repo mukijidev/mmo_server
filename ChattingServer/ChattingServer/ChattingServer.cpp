@@ -15,6 +15,7 @@
 #include "algorithm"
 #include <time.h>
 #include "CpuUsage.h"
+#include "MonitorProtocol.h"
 
 //#define _LOG
 
@@ -74,11 +75,14 @@ bool ChattingServer::OnConnectionRequest()
 	return true;
 }
 
-void ChattingServer::OnAccept(int64 sessionId)
+
+void ChattingServer::OnAccept(int64 sessionId, WCHAR* _sessionIp)
 {
 	_packetQueue.Enqueue({ true, NET_MESSAGE_ACCEPT, sessionId, nullptr });
 	SetEvent(_hEvent);
 }
+
+
 
 
 inline void ChattingServer::OnDisconnect(int64 sessionId)
@@ -483,16 +487,40 @@ unsigned int __stdcall ChattingServer::MonitorSendThread()
 	_monitorClient->SendPacket(loginPacket);
 	CPacket::Free(loginPacket);*/
 
+	CpuUsage cpuUsage;
+	PerformanceMonitorData performanceMonitorData;
+	int packetUseCount = (int)CPacket::GetUseCount();
+
+	int serverNo = SERVER_NO_CHAT;
+	CPacket* loginPacket = CPacket::Alloc();
+	MP_SS_MONITOR_LOGIN(loginPacket, serverNo);
+	_monitorClient->SendPacket(loginPacket);
+	CPacket::Free(loginPacket);
+
 	Sleep(1000);
 	while (!isNetworkStop())
 	{
 		//1초마다 한번씩 보내기 좀 더 늘릴까?
 		Sleep(1000);
 
+		long long llTick;
+		time(&llTick);
+		int ts = (int)llTick;
 
-		//long long llTick;
-		//time(&llTick);
-		//int sendTick = (int)llTick;
+
+		_performanceMonitor.Update(performanceMonitorData);
+		cpuUsage.UpdateCpuTime();
+
+		SendMonitorData(dfMONITOR_DATA_TYPE_CHAT_SERVER_RUN, 1, ts);
+		SendMonitorData(dfMONITOR_DATA_TYPE_CHAT_SERVER_CPU, (int)cpuUsage.ProcessTotal(), ts);
+		SendMonitorData(dfMONITOR_DATA_TYPE_CHAT_SERVER_MEM, (int)(performanceMonitorData.processUserAllocMemoryCounterVal.doubleValue / (1024.0 * 1024.0)), ts);
+		SendMonitorData(dfMONITOR_DATA_TYPE_CHAT_PACKET_POOL, packetUseCount, ts);
+		SendMonitorData(dfMONITOR_DATA_TYPE_CHAT_SESSION, (int)GetSessionNum(), ts);
+		SendMonitorData(dfMONITOR_DATA_TYPE_CHAT_PLAYER, (int)_playerPool.GetUseCount(), ts);
+		SendMonitorData(dfMONITOR_DATA_TYPE_CHAT_UPDATE_TPS, (int)GetUpdateTps(), ts);
+		SendMonitorData(dfMONITOR_DATA_TYPE_CHAT_JOBQUEUE, (int)_packetQueue.Size(), ts);
+
+		
 		////채팅서버 cpu 사용률
 		////채팅서버 메모리 사용 MByter
 		////채팅서버 세션수

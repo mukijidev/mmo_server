@@ -75,6 +75,19 @@ int main()
 	if (!gameServer)
 		return 0;
 
+	if (Data::MonitorActivate)
+	{
+		std::wstring wMonitorServerIp;
+		wMonitorServerIp.assign(Data::MonitorServerIp.begin(), Data::MonitorServerIp.end());
+		bool bActivateMonitorClient = gameServer->ActivateMonitorClient(wMonitorServerIp.c_str(),
+			Data::MonitorPort, Data::MonitorClientConcurrentThreadNum, Data::MonitorClientWorkerThreadNum);
+		if (!bActivateMonitorClient)
+		{
+			wprintf(L"Connect Monitor Client Failed\n");
+			LOG(L"System", LogLevel::System, L"Connect Monitor Client Failed");
+		}
+	}
+
 	int logTime = timeGetTime();
 	int logDuration = 1000;
 	while (true)

@@ -64,7 +64,7 @@ int main()
 		if (!bActivateMonitorClinent)
 		{
 			LOG(L"System", LogLevel::System, L"Connect Monitor Client Failed");
-			return false;
+			//return false;
 		}
 	}
 

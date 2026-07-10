@@ -200,6 +200,25 @@ void GameServer::ObjectPoolLog()
 	printf("stack size : %d\n", releaseStackSize);
 }
 
+bool GameServer::ActivateMonitorClient(const WCHAR* serverIp, uint16 port, uint32 concurrentThreadNum, uint32 workerThreadNum)
+{
+	_monitorClient = new MonitorClient();
+
+	bool bStart = _monitorClient->Start(serverIp, port, concurrentThreadNum, workerThreadNum);
+	if (!bStart)
+		return false;
+
+	bool bConnect = _monitorClient->Connect();
+	if (!bConnect)
+		return false;
+
+	_monitorClient->SetGameServer(this);
+	_monitorClient->Run();
+
+	return true;
+
+}
+
 
 
 

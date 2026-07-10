@@ -15,6 +15,7 @@
 
 class GameServer : public CNetServer
 {
+	friend class MonitorClient;
 
 public:
 	GameServer();
@@ -45,6 +46,9 @@ private:
 private:
 	MonitorClient* _monitorClient = nullptr;
 
+public:
+	bool ActivateMonitorClient(const WCHAR* serverIp, uint16 port, uint32 concurrentThreadNum, uint32 workerThreadNum);
+
 private: // 모니터 서버로 보낼 거 (서버)
 	int64 _loginTotal = 0;
 	int64 _sectorMoveTotal = 0;
@@ -54,7 +58,7 @@ private: // 모니터 서버로 보낼 거 (서버)
 	int _networkRecv;
 
 private: // 모니터 서버로 보낼 거 (하드웨어)
-	PerformanceMonitor _performanceMonitor{ L"GameServerLib" };
+
 
 private: // 플레이어
 	SRWLOCK _playerMapLock;
@@ -95,7 +99,7 @@ public:
 			LOG(L"GameServer", LogLevel::Error, L"Cannot find sessionId : %lld, FreePlayer", sessionId);
 			ReleaseSRWLockExclusive(&_playerMapLock);
 			return;
-		}
+		} 
 		p = (*it).second;
 		_globalPlayerMap.erase(it);
 		ReleaseSRWLockExclusive(&_playerMapLock);

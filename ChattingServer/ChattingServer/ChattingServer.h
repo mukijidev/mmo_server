@@ -29,10 +29,10 @@ private:
 private:
 	// CLanServer을(를) 통해 상속됨
 	virtual bool OnConnectionRequest() override;
-	virtual void OnAccept(int64 sessionId) override;
 	virtual void OnDisconnect(int64 sessionId) override;
 	virtual void OnRecvPacket(int64 sessionId, CPacket* packet) override;
 	virtual void OnError(int errorCode, WCHAR* errorMessage) override;
+	virtual void OnAccept(int64 sessionId, WCHAR* _sessionIp) override;
 
 private:
 	static unsigned int __stdcall UpdateThreadStatic(void* param)
@@ -108,6 +108,10 @@ private: // 모니터 서버로 보낼 거 (서버)
 		return _packetTps[sendIndex++ % TPS_ARR_NUM];
 	}
 
+private:
+	void MP_SS_MONITOR_TOOL_DATA_UPDATE(CPacket* packet, uint8& dataType, int& dataValue, int& timeStamp);
+	void MP_SS_MONITOR_LOGIN(CPacket* packet, int& serverNo);
+	void SendMonitorData(uint8 dataType, int value, int ts);
 
 private: // 모니터 서버로 보낼 거 (하드웨어)
 	PerformanceMonitor _performanceMonitor{ L"ChattingServer" };
@@ -124,6 +128,8 @@ private:
 
 	void MP_SC_CHAT_MESSAGE(CPacket* packet, int64& accountNo, WCHAR* nickName, uint16& messageLen, CPacket* message);
 	void MP_SC_LOGIN(CPacket* packet, int64& accountNo, uint8& status);
+
+	// CNetServer을(를) 통해 상속됨
 };
 
 

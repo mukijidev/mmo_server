@@ -153,16 +153,17 @@ private:
 	uint16 clientPacketCode = Data::clientPacketCode;
 
 private: // client
-	void MP_SC_MONITOR_TOOL_DATA_UPDATE(CPacket* packet, uint8& dataType, int& dataValue, int& timeStamp);
+	void MP_SS_MONITOR_TOOL_DATA_UPDATE(CPacket* packet, uint8& dataType, int& dataValue, int& timeStamp);
 	void MP_SS_MONITOR_LOGIN(CPacket* packet, int& serverNo);
-
+	void SendMonitorData(uint8 dataType, int value, int ts);
+		
 private: // server
 	void MP_SC_LOGIN(CPacket* packet, int64& accountNo, uint8& status, WCHAR* gameServerIP, uint16& gameServerPort, WCHAR* chatServerIP, uint16& chatServerPort, const char* sessionKey);
 	void MP_SC_ECHO(CPacket* packet);
 	void MP_SC_SIGN_UP(CPacket* packet, uint8& status);
 
 	// CNetServer을(를) 통해 상속됨
-	void OnAccept(int64 sessionId) override;
+	//void OnAccept(int64 sessionId) override;
 
 private:
 	int64 LoginByIdPassword(const char* id, const char* pw);

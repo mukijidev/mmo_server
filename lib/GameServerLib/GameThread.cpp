@@ -84,6 +84,14 @@ unsigned __stdcall GameThread::UpdateThread()
 
 		// 프레임 맞추기
 		DWORD frameTime = timeGetTime() - currentTime;
+
+		_frameMsAccum += frameTime;
+		_frameTickCount++;
+		if ((int)frameTime > _frameMsMax)
+		{
+			_frameMsMax = (int)frameTime;
+		}
+
 		if (frameTime < _msPerFrame)
 		{
 			Sleep(_msPerFrame - frameTime);
@@ -103,8 +111,33 @@ unsigned int __stdcall GameThread::MonitorThread()
 		_packetTps[tpsIndex % TPS_ARR_NUM] = _updateTps;
 		_updateTps = 0;
 
+
+
 		_jpsTpsArr[tpsIndex % TPS_ARR_NUM] = _jpsTps;
 		_jpsTps = 0;
+
+		if (_frameTickCount != 0)
+		{
+			_frameAvgArr[tpsIndex % TPS_ARR_NUM] = _frameMsAccum / _frameTickCount;
+		}
+		else {
+			_frameAvgArr[tpsIndex % TPS_ARR_NUM] = 0;
+		}
+
+		_frameMaxArr[tpsIndex % TPS_ARR_NUM] = _frameMsMax;
+		_frameMsAccum = 0;
+		_frameTickCount = 0;
+		_frameMsMax = 0;
+
+		_playerJpsTpsArr[tpsIndex % TPS_ARR_NUM] = _playerJpsTps;  
+		_playerJpsTps = 0;
+
+		_monsterJpsTpsArr[tpsIndex % TPS_ARR_NUM] = _monsterJpsTps; 
+		_monsterJpsTps = 0;
+
+		_dbWriteTpsArr[tpsIndex % TPS_ARR_NUM] = _dbWriteTps;    
+		_dbWriteTps = 0;
+
 		tpsIndex++;
 	}
 

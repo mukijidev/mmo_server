@@ -42,7 +42,7 @@
 */
 :MonitorClient
 {
-	MonitorActivate = 0
+	MonitorActivate = 1
 	MonitorServerIp = 127.0.0.1
 	MonitorPort = 10393
 	MonitorClientConcurrentThreadNum   =	 1

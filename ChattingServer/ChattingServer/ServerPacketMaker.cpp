@@ -35,4 +35,3 @@ void ChattingServer::MP_SC_LOGIN(CPacket* packet, int64& accountNo, uint8& statu
 	memcpy(packet->GetBufferPtr() + NET_HEADER_SIZE_INDEX, (void*)&len, sizeof(uint16));
 }
 
-

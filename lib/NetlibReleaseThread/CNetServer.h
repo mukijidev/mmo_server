@@ -35,8 +35,8 @@ public:
 	/// <returns> </returns>
 	virtual bool OnConnectionRequest() = 0;
 	//accept후 접속 처리 완료 후 호출
-	//virtual void OnAccept(int64 sessionId, WCHAR* _sessionIp) = 0;
-	virtual void OnAccept(int64 sessionId) = 0;
+	virtual void OnAccept(int64 sessionId, WCHAR* _sessionIp) = 0;
+	//virtual void OnAccept(int64 sessionId) = 0;
 	//release후 호출
 	virtual void OnDisconnect(int64 sessionId) = 0;
 	virtual void OnRecvPacket(int64 sessionId, CPacket* packet) = 0;

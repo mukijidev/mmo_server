@@ -254,6 +254,7 @@ void FieldPacketHandleThread::GameRun(float deltaTime)
 	//}
 
 	FrameUpdate(deltaTime);
+	UpdateMonitorSector();
 }
 
 
@@ -496,6 +497,7 @@ void FieldPacketHandleThread::HandleAsyncJobFinish(int64 objectId, uint16 jobTyp
 		{
 			Player* player = static_cast<Player*>(obj);
 			player->ApplyPath(pr->path, pr->rawStart, pr->rawDest);
+			_playerJpsTps++;
 		}
 		break;
 
@@ -503,6 +505,7 @@ void FieldPacketHandleThread::HandleAsyncJobFinish(int64 objectId, uint16 jobTyp
 		{
 			Monster* monster = static_cast<Monster*>(obj);
 			monster->ApplyPath(pr->path, pr->rawStart, pr->rawDest);
+			_monsterJpsTps++;
 		}
 		break;
 
@@ -537,6 +540,32 @@ void FieldPacketHandleThread::LogAndResetFindPathDebug(const char* name)
 
 }
 
+void FieldPacketHandleThread::UpdateMonitorSector()
+{
+	DWORD now = timeGetTime();
+	if (now - _monSectorLastTime < 1000)
+		return;
+	_monSectorLastTime = now;
+
+	uint8 tmp[225] = { 0, };
+	for (auto it = _playerMap.begin(); it != _playerMap.end(); ++it)
+	{
+		Player* p = it->second;
+		Sector* s = p->_currentSector;
+
+		if (s == nullptr)
+			continue;
+
+		int idx = (int)s->Y * _sectorXLen + (int)s->X;
+		if (idx < 0 || idx >= 225)
+			continue;
+		if (tmp[idx] < 255)
+			tmp[idx]++;
+	}
+	memcpy((void*)_monSectorCells, tmp, sizeof(tmp));
+
+}
+
 
 void FieldPacketHandleThread::AddDBJob(std::function<void()> job)
 {
@@ -544,6 +573,7 @@ void FieldPacketHandleThread::AddDBJob(std::function<void()> job)
 		std::lock_guard<std::mutex> lock(_dbMutex);
 		_dbJobQueue.push(job);
 	}
+	_dbWriteTps++;
 	_dbCV.notify_one();
 }
 
