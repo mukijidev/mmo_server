@@ -63,24 +63,24 @@ void LoginGameThread::InitMySQL()
 	}
 
 	// last_player_id 테이블에서 마지막 PlayerID 가져오기
-	const char* query = "SELECT PlayerID FROM last_player_id LIMIT 1";
-	if (mysql_query(_connection, query))
-	{
-		fprintf(stderr, "querry error: %s\n", mysql_error(_connection));
-	}
-	else
-	{
-		MYSQL_RES* result = mysql_store_result(_connection);
-		if (result)
-		{
-			MYSQL_ROW row = mysql_fetch_row(result);
-			if (row && row[0])
-			{
-				lastPlayerId = atoll(row[0]); // 문자열을 long long 타입으로 변환
-			}
-			mysql_free_result(result);
-		}
-	}
+	//const char* query = "SELECT PlayerID FROM last_player_id LIMIT 1";
+	//if (mysql_query(_connection, query))
+	//{
+	//	fprintf(stderr, "querry error: %s\n", mysql_error(_connection));
+	//}
+	//else
+	//{
+	//	MYSQL_RES* result = mysql_store_result(_connection);
+	//	if (result)
+	//	{
+	//		MYSQL_ROW row = mysql_fetch_row(result);
+	//		if (row && row[0])
+	//		{
+	//			lastPlayerId = atoll(row[0]); // 문자열을 long long 타입으로 변환
+	//		}
+	//		mysql_free_result(result);
+	//	}
+	//}
 
 }
 
@@ -325,49 +325,51 @@ void LoginGameThread::HandleCreatePlayer(Player* player, CPacket* packet)
 	wcstombs(nickName, NickName, NICKNAME_LEN * sizeof(TCHAR));
 
 	
-	int64 PlayerID = ++lastPlayerId;
-	// last_player_id 테이블 업데이트
-	char updateQuery[256];
-	sprintf(updateQuery, "UPDATE last_player_id SET PlayerID = %lld", lastPlayerId);
+	//int64 PlayerID = ++lastPlayerId;
+	//// last_player_id 테이블 업데이트
+	//char updateQuery[256];
+	//sprintf(updateQuery, "UPDATE last_player_id SET PlayerID = %lld", lastPlayerId);
 
-	if (mysql_query(&_conn, updateQuery))
-	{
-		fprintf(stderr, "last_player_id query fail: %s\n", mysql_error(&_conn));
-		// 실패한 경우 lastPlayerId를 다시 감소
-		--lastPlayerId;
+	//if (mysql_query(&_conn, updateQuery))
+	//{
+	//	fprintf(stderr, "last_player_id query fail: %s\n", mysql_error(&_conn));
+	//	// 실패한 경우 lastPlayerId를 다시 감소
+	//	--lastPlayerId;
 
-		CPacket* resPacket = CPacket::Alloc();
-		uint8 Status = 0;
-		PlayerInfo playerInfo;
-		MP_SC_CREATE_PLAYER(resPacket, Status, playerInfo);
-		SendPacket_Unicast(player->_sessionId, resPacket);
-		CPacket::Free(resPacket);
-		return;
-	}
+	//	CPacket* resPacket = CPacket::Alloc();
+	//	uint8 Status = 0;
+	//	PlayerInfo playerInfo;
+	//	MP_SC_CREATE_PLAYER(resPacket, Status, playerInfo);
+	//	SendPacket_Unicast(player->_sessionId, resPacket);
+	//	CPacket::Free(resPacket);
+	//	return;
+	//}
 
 
 	// 쿼리 실행
 	bool createSuccess = false;
 
 	MYSQL_STMT* stmt = mysql_stmt_init(&_conn);
-	const char* sql = "INSERT INTO Player(PlayerID, AccountNo, NickName, Class) VALUES(?, ?, ?, ?)";
+	const char* sql = "INSERT INTO Player(AccountNo, NickName, Class) VALUES(?, ?, ?)";
 	mysql_stmt_prepare(stmt, sql, (unsigned long)strlen(sql));
 
 
-	MYSQL_BIND b[4] = {};
+	MYSQL_BIND b[3] = {};
 	b[0].buffer_type = MYSQL_TYPE_LONGLONG;
-	b[0].buffer = &PlayerID;
-	b[1].buffer_type = MYSQL_TYPE_LONGLONG;
-	b[1].buffer = &player->accountNo;
-	b[2].buffer_type = MYSQL_TYPE_STRING;
-	b[2].buffer = nickName;
-	b[2].buffer_length = (uint32)strlen(nickName);
-	b[3].buffer_type = MYSQL_TYPE_SHORT;
-	b[3].buffer = &Class;
+	b[0].buffer = &player->accountNo;
+	b[1].buffer_type = MYSQL_TYPE_STRING;
+	b[1].buffer = nickName;
+	b[1].buffer_length = (uint32)strlen(nickName);
+	b[2].buffer_type = MYSQL_TYPE_SHORT;
+	b[2].buffer = &Class;
 	mysql_stmt_bind_param(stmt, b);
 
+	int64 newPlayerId = 0;
 	if (mysql_stmt_execute(stmt) == 0)
+	{
 		createSuccess = true;
+		newPlayerId = (int64)mysql_stmt_insert_id(stmt);
+	}
 
 	mysql_stmt_close(stmt);
 
@@ -375,7 +377,7 @@ void LoginGameThread::HandleCreatePlayer(Player* player, CPacket* packet)
 	PlayerInfo playerInfo;
 	if (createSuccess)
 	{
-		playerInfo.PlayerID = PlayerID;
+		playerInfo.PlayerID = newPlayerId;
 		wcscpy(playerInfo.NickName, NickName);
 		playerInfo.Class = Class;
 		playerInfo.Level = 1;

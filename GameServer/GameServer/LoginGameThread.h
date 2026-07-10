@@ -50,7 +50,7 @@ private:
 
 private:
 
-	int64 lastPlayerId = 0;
+	//int64 lastPlayerId = 0;
 	// GameThread을(를) 통해 상속됨
 	void GameRun(float deltaTime) override;
 

@@ -39,10 +39,6 @@
 	LogLevel = 1
 }
 
-:ChattingServer
-{
-	ChattingServerPort = 10391
-}
 
 /*
 클라이언트
