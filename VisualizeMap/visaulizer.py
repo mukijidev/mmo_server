@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 
 
 file_path = 'C:/Unreal/MMOGameServer/VisualizeMap/LobbyMap.dat'
-y_size = 12000
-x_size = 12000
+y_size = 24000
+x_size = 24000
 
 # uint8 형식으로 파일 읽기
 with open(file_path, 'rb') as f:

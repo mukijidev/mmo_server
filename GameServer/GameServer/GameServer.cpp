@@ -30,19 +30,19 @@ GameServer::GameServer()
 	//TODO: 여기서 맵 로딩하고
 	//TODO: GameThread만들때 맵데이터 넘기고
 	
-	_lobbyMap = LoadMapData("map/LobbyMap.dat", 12000, 12000);
-	_guardianMap = LoadMapData("map/GuardianMap.dat", 12000, 12000);
-	_spiderMap = LoadMapData("map/SpiderMap.dat", 12000, 12000);
+	_lobbyMap = LoadMapData("map/LobbyMap.dat", MAP_SIZE, MAP_SIZE);
+	_guardianMap = LoadMapData("map/GuardianMap.dat", MAP_SIZE, MAP_SIZE);
+	_spiderMap = LoadMapData("map/SpiderMap.dat", MAP_SIZE, MAP_SIZE);
 
-	_lobbyCoarse = BuildCoarse(_lobbyMap, 12000, 12000, COARSE_CELL, _coarseY, _coarseX);
-	_guardianCoarse = BuildCoarse(_guardianMap, 12000, 12000, COARSE_CELL, _coarseY, _coarseX);
-	_spiderCoarse = BuildCoarse(_spiderMap, 12000, 12000, COARSE_CELL, _coarseY, _coarseX);
+	_lobbyCoarse = BuildCoarse(_lobbyMap, MAP_SIZE, MAP_SIZE, COARSE_CELL, _coarseY, _coarseX);
+	_guardianCoarse = BuildCoarse(_guardianMap, MAP_SIZE, MAP_SIZE, COARSE_CELL, _coarseY, _coarseX);
+	_spiderCoarse = BuildCoarse(_spiderMap, MAP_SIZE, MAP_SIZE, COARSE_CELL, _coarseY, _coarseX);
 
 
 
-	_LobbyFieldThread = new LobbyFieldThread(this, FIELD_LOBBY, 100, 15, 15, 800, 800, _lobbyMap, _lobbyCoarse);
-	_GuardianFieldThread = new GuardianFieldThread(this, FIELD_GUARDIAN, 100, 15, 15, 800, 800, _guardianMap, _guardianCoarse);
-	_SpiderFieldThread = new SpiderFieldThread(this, FIELD_SPIDER, 100, 15, 15, 800, 800, _spiderMap, _spiderCoarse);
+	_LobbyFieldThread = new LobbyFieldThread(this, FIELD_LOBBY, 100, SECTOR_LEN, SECTOR_LEN, SECTOR_SIZE, SECTOR_SIZE, _lobbyMap, _lobbyCoarse);
+	_GuardianFieldThread = new GuardianFieldThread(this, FIELD_GUARDIAN, 100, SECTOR_LEN, SECTOR_LEN, SECTOR_SIZE, SECTOR_SIZE, _guardianMap, _guardianCoarse);
+	_SpiderFieldThread = new SpiderFieldThread(this, FIELD_SPIDER, 100, SECTOR_LEN, SECTOR_LEN, SECTOR_SIZE, SECTOR_SIZE, _spiderMap, _spiderCoarse);
 	
 	_loginGameThread->Start();
 	_LobbyFieldThread->Start();
@@ -98,7 +98,7 @@ GameServer::~GameServer()
 	delete _LobbyFieldThread;
 	delete _SpiderFieldThread;
 
-	for (int i = 0; i < 12000; i++)
+	for (int i = 0; i < MAP_SIZE; i++)
 	{
 		delete[] _lobbyMap[i];
 		delete[] _guardianMap[i];

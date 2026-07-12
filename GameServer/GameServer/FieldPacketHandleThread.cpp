@@ -294,8 +294,8 @@ void FieldPacketHandleThread::OnEnterThread(int64 sessionId, void* ptr)
 
 	if (wcscmp(L"boom1", p->playerInfo.NickName) == 0)
 	{
-		spawnX = 12000;   // 24000 / 2 = ¸Ê Áß¾Ó
-		spawnY = 12000;
+		spawnX = MAP_CENTER;   // 24000 / 2 = ¸Ê Áß¾Ó
+		spawnY = MAP_CENTER;
 	}
 	
 
@@ -557,8 +557,11 @@ void FieldPacketHandleThread::UpdateMonitorSector()
 		if (s == nullptr)
 			continue;
 
-		int idx = (int)s->Y * _sectorXLen + (int)s->X;
-		if (idx < 0 || idx >= 225)
+		int cellY = (int)s->Y * MONITOR_SECTOR_GRID / _sectorYLen;
+		int cellX = (int)s->X * MONITOR_SECTOR_GRID / _sectorXLen;
+		int idx = cellY * MONITOR_SECTOR_GRID + cellX;
+
+		if (idx < 0 || idx >= MONITOR_SECTOR_GRID * MONITOR_SECTOR_GRID)
 			continue;
 		if (tmp[idx] < 255)
 			tmp[idx]++;

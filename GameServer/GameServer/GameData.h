@@ -16,3 +16,9 @@
 #define EXP_PER_LEVEL 100
 
 #define FIND_PATH_MIN_INTERVAL_MS 100
+
+
+#define SECTOR_SIZE 800
+#define SECTOR_LEN 30
+#define MAP_SIZE 24000
+#define MAP_CENTER 12000

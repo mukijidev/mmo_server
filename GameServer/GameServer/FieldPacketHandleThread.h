@@ -9,7 +9,7 @@
 #include "DBSecret.h"
 #include <queue>
 #include <memory>
-
+#include "MonitorProtocol.h"
 
 class CPacket;
 class Player;
@@ -158,7 +158,7 @@ public:
 	void UpdateMonitorSector();
 
 
-	uint8 _monSectorCells[225] = { 0, };
+	uint8 _monSectorCells[MONITOR_SECTOR_GRID * MONITOR_SECTOR_GRID] = { 0, };
 	DWORD _monSectorLastTime = 0;
 };
 
