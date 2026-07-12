@@ -129,8 +129,8 @@ unsigned int __stdcall MonitorClient::UpdateThread()
 		//DB
 		int dbTps = _gameServer->_LobbyFieldThread->GetDbWriteTps() + _gameServer->_GuardianFieldThread->GetDbWriteTps()
 			+ _gameServer->_SpiderFieldThread->GetDbWriteTps();
-		int dbQueue = _gameServer->_LobbyFieldThread->GetDBQueueSize() + _gameServer->_GuardianFieldThread->GetJPSQueueSize()
-			+ _gameServer->_SpiderFieldThread->GetJPSQueueSize();
+		int dbQueue = _gameServer->_LobbyFieldThread->GetDBQueueSize() + _gameServer->_GuardianFieldThread->GetDBQueueSize()
+			+ _gameServer->_SpiderFieldThread->GetDBQueueSize();
 
 		SendMonitorData(dfMONITOR_DATA_TYPE_GAME_DB_TPS, dbTps, ts);
 		SendMonitorData(dfMONITOR_DATA_TYPE_GAME_DB_QUEUE, dbQueue, ts);
