@@ -106,6 +106,7 @@ private:
 	
 	std::list<Node*> openList;
 	std::list<Node*> closeList;
+	std::vector<Pos> _dirtyCells;
 	Pos _start;
 	Pos _dest;
 

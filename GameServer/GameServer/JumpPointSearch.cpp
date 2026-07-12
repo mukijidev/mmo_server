@@ -49,8 +49,9 @@ JumpPointSearch::JumpPointSearch(uint8** coarse, int32 cNy, int32 cNx, uint8** f
 	for (int i = 0; i < _mapYSize; i++)
 	{
 		_jpsMap[i] = new uint8[_mapXSize];
-		memset(_jpsMap[i], 0, sizeof(uint8) * _mapXSize);
+		memcpy(_jpsMap[i], _originMap[i], sizeof(uint8) * _mapXSize);
 	}
+	_dirtyCells.reserve(MAX_NODES);
 }
 
 JumpPointSearch::~JumpPointSearch()
@@ -82,10 +83,14 @@ void JumpPointSearch::FindPath(Pos start, Pos end, OUT std::vector<Pos>& returnP
 
 	std::vector<Pos> path;
 	//First : 맵 초기화하고
-	for (int i = 0; i < _mapYSize; ++i)
+	/*for (int i = 0; i < _mapYSize; ++i)
 	{
 		memcpy(_jpsMap[i], _originMap[i], sizeof(uint8) * _mapXSize);
-	}
+	}*/
+	for (Pos& p : _dirtyCells)
+		_jpsMap[p.y][p.x] = _originMap[p.y][p.x];
+
+	_dirtyCells.clear();
 
 	Node* startNode = CreateStartNode(_start);
 
@@ -210,7 +215,7 @@ void JumpPointSearch::SetMap(Pos& pos, uint8 value)
 	//		return;
 	//	}
 	//}
-
+	_dirtyCells.push_back(pos);
 	_jpsMap[pos.y][pos.x] = value;
 }
 
